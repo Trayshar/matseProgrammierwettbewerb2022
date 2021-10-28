@@ -7,7 +7,9 @@ testing:
   script:
     - ./test.sh
 
-bridge_a:
+bridge:
   stage: deploy
+  tags:
+    - docker
   trigger:
-    project: m2021/md2021_global_sg
+    project: m2021/md2021global
