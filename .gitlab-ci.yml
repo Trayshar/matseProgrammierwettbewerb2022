@@ -3,13 +3,13 @@ stages:
   - deploy
 
 testing:
+  tags:
+    - docker
   stage: test
   script:
     - ./test.sh
 
 bridge:
   stage: deploy
-  tags:
-    - docker
   trigger:
     project: m2021/md2021global
