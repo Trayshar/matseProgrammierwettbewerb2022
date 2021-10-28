@@ -1,0 +1,13 @@
+stages:
+  - test
+  - deploy
+
+testing:
+  stage: test
+  script:
+    - ./test.sh
+
+bridge_a:
+  stage: deploy
+  trigger:
+    project: m2021/md2021_global_sg
