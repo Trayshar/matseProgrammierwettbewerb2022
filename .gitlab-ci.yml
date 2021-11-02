@@ -10,6 +10,8 @@ testing:
     - ./test.sh
 
 bridge:
+  tags:
+    - docker
   stage: deploy
   script:
   - "curl -X POST -F token=ce90992025c2e7cafd0eb55f8312ec -F ref=main https://git-ce.rwth-aachen.de/api/v4/projects/8105/trigger/pipeline"
