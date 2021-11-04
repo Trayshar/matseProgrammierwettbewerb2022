@@ -8,7 +8,7 @@ building:
     - docker
   stage: compile
   script:
-    - javac -cp library mdw2021/CompetitionMainClass.java
+    - javac -classpath library/commons-cli-1.5.0.jar mdw2021/CompetitionMainClass.java 
 
 testing:
   tags:
