@@ -1,6 +1,14 @@
 stages:
+  - compile
   - test
   - deploy
+
+building:
+  tags:
+    - docker
+  stage: compile
+  script:
+    - javac -Djava.ext.dirs=library mdw2021/CompetitionMainClass.java
 
 testing:
   tags:
