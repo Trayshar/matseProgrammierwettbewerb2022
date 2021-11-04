@@ -1,20 +1,20 @@
 stages:
-  - compile
   - test
   - deploy
 
-building:
-  tags:
-    - docker
-  stage: compile
-  script:
-    - javac -classpath library/commons-cli-1.5.0.jar mdw2021/CompetitionMainClass.java 
+#building:
+#  tags:
+#    - docker
+#  stage: compile
+#  script:
+#    - javac -classpath library/commons-cli-1.5.0.jar mdw2021/CompetitionMainClass.java 
 
 testing:
   tags:
     - docker
   stage: test
   script:
+    - javac -classpath library/commons-cli-1.5.0.jar mdw2021/CompetitionMainClass.java
     - ./test.sh
 
 bridge:
