@@ -14,7 +14,7 @@ public class CompetitionMainClass {
 	private static Options options;
 	private static final String helpOptionString = "help";
 	private static final String test1OptionString = "test1";
-	private static final String test1Output = "Test geändert.";
+	private static final String test1Output = "Code geändert.";
 	private static final String test2OptionString = "test2";
 	private static final String test3OptionString = "test3";
 
