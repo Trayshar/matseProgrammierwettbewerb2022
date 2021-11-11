@@ -74,21 +74,31 @@ public class CompetitionMainClass {
 				String inputFile = loadFileContent(line.getOptionValue(inputfileOptionString));
 				String resultFile = loadFileContent(line.getOptionValue(resultfileOptionString));
 				// check syntax of both files
-				InputFileSyntaxChecker.CheckSyntax(inputFile);
-				ResultFileSyntaxChecker.CheckSyntax(resultFile);
+				InputFileSyntaxChecker.checkSyntax(inputFile, verboseOutput);
+				ResultFileSyntaxChecker.checkSyntax(resultFile, verboseOutput);
 				// compare input and output files
-				SemanticsChecker.checkInputOutpuConsistency(inputFile, resultFile);
+				SemanticsChecker.checkInputOutpuConsistency(inputFile, resultFile, verboseOutput);
 
 			} else if (line.hasOption(inputfileOptionString)) {
 				// load file
 				String inputFile = loadFileContent(line.getOptionValue(inputfileOptionString));
+				if (verboseOutput) {
+					System.out.println("Loaded the following file content >>");
+					System.out.println(inputFile);
+					System.out.println("<< End of file content.");
+				}
 				// check syntax of input file
-				InputFileSyntaxChecker.CheckSyntax(inputFile);
+				InputFileSyntaxChecker.checkSyntax(inputFile, verboseOutput);
 			} else if (line.hasOption(resultfileOptionString)) {
 				// load files
 				String resultFile = loadFileContent(line.getOptionValue(resultfileOptionString));
+				if (verboseOutput) {
+					System.out.println("Loaded the following file content >>");
+					System.out.println(resultFile);
+					System.out.println("<< End of file content.");
+				}
 				// check syntax of output file
-				ResultFileSyntaxChecker.CheckSyntax(resultFile);
+				ResultFileSyntaxChecker.checkSyntax(resultFile, verboseOutput);
 			}
 
 		} catch (ParseException exp) {
