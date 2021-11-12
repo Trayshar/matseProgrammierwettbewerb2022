@@ -1,7 +1,7 @@
 package mdw2021;
 
 public class InputFileSyntaxChecker {
-	static void checkSyntax(String inputFile, boolean verboseOuptput) throws Exception {
+	static void checkSyntax(String inputFile, boolean verboseOutput) throws Exception {
 		String[] lines = inputFile.split("\n");
 		boolean dimensionFound = false;
 		int d1, d2, d3;
@@ -22,7 +22,7 @@ public class InputFileSyntaxChecker {
 					d3 = Integer.parseInt(dimensions[2]);
 					dimensionFound = true;
 					numberPartsExpected = d1 * d2 * d3;
-					if (verboseOuptput) {
+					if (verboseOutput) {
 						System.out.println("Read dimensions: " + d1 + "," + d2 + "," + d3);
 					}
 					continue;
@@ -33,7 +33,8 @@ public class InputFileSyntaxChecker {
 
 			// Check whether all lines following the dimension line, contain the correct
 			// part definitions
-			String tmpPartDesc[] = line.substring(5).split(":\\ ");
+			//String tmpPartDesc[] = line.substring(5).split(":\\ ");
+			String tmpPartDesc[] = line.split(":\\ ");
 			if (tmpPartDesc.length == 2) {
 				if (partDefinitions <= numberPartsExpected) {
 					String cubeSides[] = tmpPartDesc[1].split(" ");
@@ -41,9 +42,12 @@ public class InputFileSyntaxChecker {
 					if (cubeSides.length == 6) {
 						for (int i = 0; i < cubeSides.length; i++) {
 							cubeSidesInt[i] = Integer.parseInt(cubeSides[i]);
+							if (cubeSidesInt[i] < 0 || cubeSidesInt[i] >4) {
+								throw new Exception("Expected integer values 0-4. Got: " + cubeSidesInt[i]);
+							}
 						}
 						partDefinitions++;
-						if (verboseOuptput) {
+						if (verboseOutput) {
 							System.out.print("Read in part definition of \"" + tmpPartDesc[0] + "\": ");
 							for (int side : cubeSidesInt) {
 								System.out.print(side + " ");
@@ -67,7 +71,7 @@ public class InputFileSyntaxChecker {
 		if (partDefinitions != numberPartsExpected) {
 			throw new Exception("Got " + partDefinitions + " definitions. Expected " + numberPartsExpected + ".");
 		}
-		if (verboseOuptput) {
+		if (verboseOutput) {
 			System.out.println("Successfully finished reading input file without finding errors.");
 		}
 	}
