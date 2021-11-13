@@ -1,14 +1,17 @@
 package mdw2021;
 
-public class SemanticsChecker {
-	static boolean checkInputOutpuConsistency(String input, String output, boolean verboseOutput) {
-		//check if the dimensions for input and output are equal
-		//check number of cubes
+public class Cube {
+	String sides;
 
-		//check if all cubes have an equivalent
-		//build a representation for a cube
-		//implement method to rotate a cube through all possible positions  
-		
-		return false;
+	public Cube(int[] inputSides) {
+		sides = " " + inputSides[0] + inputSides[1] + inputSides[2] + inputSides[3] + inputSides[4] + inputSides[5];
+	}
+
+	public void rotate(int x, int y, int z) {
+
+	}
+
+	public boolean equals(Cube cubeToCompare) {
+		return sides.equals(cubeToCompare.sides);
 	}
 }
