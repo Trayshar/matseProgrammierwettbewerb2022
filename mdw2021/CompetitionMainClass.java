@@ -21,8 +21,6 @@ public class CompetitionMainClass {
 	private static final String test1Output = "Test";
 	private static final String test2OptionString = "test2";
 	private static final String test3OptionString = "test3";
-	private static final String inputfileOptionString = "inputfile";
-	private static final String resultfileOptionString = "resultfile";
 	private static final String verboseOutputOptionString = "verbose";
 	private static boolean verboseOutput = false;
 
@@ -41,11 +39,6 @@ public class CompetitionMainClass {
 		testoptionsGroup
 				.addOption(new Option(test3OptionString, "t3", false, "Output the current time stamp in seconds"));
 		options.addOptionGroup(testoptionsGroup);
-		// Generate input file option
-		options.addOption("i", inputfileOptionString, true, "Path to competition input file");
-		// Generate result file option
-		options.addOption("r", resultfileOptionString, true, "Path to competition result file");
-		// Generate option for verbose output
 		options.addOption("v", verboseOutputOptionString, false, "Output verbose information, if available");
 	}
 
@@ -69,49 +62,12 @@ public class CompetitionMainClass {
 			if (line.hasOption(verboseOutputOptionString)) {
 				verboseOutput = true;
 			}
-			if (line.hasOption(inputfileOptionString) && line.hasOption(resultfileOptionString)) {
-				// load files
-				String inputFile = loadFileContent(line.getOptionValue(inputfileOptionString));
-				String resultFile = loadFileContent(line.getOptionValue(resultfileOptionString));
-				// check syntax of both files
-				InputFileSyntaxChecker.checkSyntax(inputFile, verboseOutput);
-				ResultFileSyntaxChecker.checkSyntax(resultFile, verboseOutput);
-				// compare input and output files
-				SemanticsChecker.checkInputOutpuConsistency(inputFile, resultFile, verboseOutput);
-
-			} else if (line.hasOption(inputfileOptionString)) {
-				// load file
-				String inputFile = loadFileContent(line.getOptionValue(inputfileOptionString));
-				if (verboseOutput) {
-					System.out.println("Loaded the following file content >>");
-					System.out.println(inputFile);
-					System.out.println("<< End of file content.");
-				}
-				// check syntax of input file
-				InputFileSyntaxChecker.checkSyntax(inputFile, verboseOutput);
-			} else if (line.hasOption(resultfileOptionString)) {
-				// load files
-				String resultFile = loadFileContent(line.getOptionValue(resultfileOptionString));
-				if (verboseOutput) {
-					System.out.println("Loaded the following file content >>");
-					System.out.println(resultFile);
-					System.out.println("<< End of file content.");
-				}
-				// check syntax of output file
-				ResultFileSyntaxChecker.checkSyntax(resultFile, verboseOutput);
-			}
 
 		} catch (ParseException exp) {
 			System.err.println("Parsing failed. Reason: " + exp.getMessage());
-		} catch (IOException exp) {
-			System.err.println("Loading file failed: " + exp.getMessage());
 		} catch (Exception e) {
 			System.err.println("Failed. Reason: " + e.getMessage());
 		}
 	}
 
-	private static String loadFileContent(String path) throws IOException {
-		byte[] encoded = Files.readAllBytes(Paths.get(path));
-		return new String(encoded);
-	}
 }
