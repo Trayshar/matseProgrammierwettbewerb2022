@@ -1,7 +1,10 @@
-echo "dies ist ein lokaler test, der einen Trigger ausloesen soll (tach, test)"
-echo "Verzeichnis: "`pwd`
-echo "Zeitstempel: "`date`
+# java -jar md2021.jar -t1
+# java -jar md2021.jar -t2 "Test Text zum Argument testen"
+# java -jar md2021.jar -t3
+# java -jar md2021.jar -i test.in
+# java -jar md2021.jar -r test.out
+# java -jar md2021.jar -i test.in -r test.out
 
-java -jar md2021.jar --t1
-java -jar md2021.jar --t2 "Test Text zum Argument testen"
-java -jar md2021.jar --t3
+for i in `ls input_files`; do
+	java -jar md2021.jar -i input_files/$i -r result_files/$i.out
+done

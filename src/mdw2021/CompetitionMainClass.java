@@ -1,8 +1,7 @@
 package mdw2021;
 
+import java.io.FileWriter;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
@@ -13,6 +12,8 @@ import org.apache.commons.cli.OptionGroup;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
+import implementation.Puzzle;
+
 public class CompetitionMainClass {
 
 	private static Options options;
@@ -21,12 +22,40 @@ public class CompetitionMainClass {
 	private static final String test1Output = "Test";
 	private static final String test2OptionString = "test2";
 	private static final String test3OptionString = "test3";
-	private static final String verboseOutputOptionString = "verbose";
-	private static boolean verboseOutput = false;
+    private static final String inputfileOptionString = "inputfile";
+    private static final String resultfileOptionString = "resultfile";
+	private static String inputFilename;
+	private static String resultFilename;
+	private static boolean runAlgorithm = false;	
 
 	public static void main(String[] args) {
 		initOptions();
 		parseOptions(args);
+		if (runAlgorithm) {			
+			final long timeStart = System.currentTimeMillis();			
+										
+			IPuzzle p = new Puzzle();
+			p.readInput(inputFilename);
+			p.solve();
+			if (p.hasSolution())
+				p.writeResult(resultFilename);
+			else
+				noSolution(resultFilename);
+			
+			final long timeEnd = System.currentTimeMillis();
+			System.out.println("Processing of file " + inputFilename + " took " + (timeEnd - timeStart) / 1000.0 + " seconds."); 		
+		}
+	}
+	
+	private static void noSolution(String filename) {
+	    try {
+	        FileWriter myWriter = new FileWriter(filename);
+	        myWriter.write("No Solution was found!\n");
+	        myWriter.close();
+	      } catch (IOException e) {
+	        System.err.println("Could not open file for writing!");
+	        e.printStackTrace();
+	      }		
 	}
 
 	private static void initOptions() {
@@ -39,9 +68,11 @@ public class CompetitionMainClass {
 		testoptionsGroup
 				.addOption(new Option(test3OptionString, "t3", false, "Output the current time stamp in seconds"));
 		options.addOptionGroup(testoptionsGroup);
-		options.addOption("v", verboseOutputOptionString, false, "Output verbose information, if available");
+        // Generate input file option
+        options.addOption("i", inputfileOptionString, true, "Path to competition input file");
+        // Generate result file option
+        options.addOption("r", resultfileOptionString, true, "Path to competition result file");
 	}
-
 	private static void parseOptions(String[] args) {
 		// create the parser
 		CommandLineParser parser = new DefaultParser();
@@ -59,8 +90,16 @@ public class CompetitionMainClass {
 			} else if (line.hasOption(test3OptionString)) {
 				System.out.println(System.currentTimeMillis() / 1000);
 			}
-			if (line.hasOption(verboseOutputOptionString)) {
-				verboseOutput = true;
+			if (line.hasOption(inputfileOptionString) && line.hasOption(resultfileOptionString)) {
+				// load files
+				inputFilename = line.getOptionValue(inputfileOptionString);
+				resultFilename = line.getOptionValue(resultfileOptionString);
+				runAlgorithm = true;
+
+			} else if (line.hasOption(inputfileOptionString)) {
+				throw new ParseException("Input File given, but no Result File was defined!");
+			} else if (line.hasOption(resultfileOptionString)) {
+				throw new ParseException("Result File given, but no Input File was defined!");
 			}
 
 		} catch (ParseException exp) {
@@ -69,5 +108,4 @@ public class CompetitionMainClass {
 			System.err.println("Failed. Reason: " + e.getMessage());
 		}
 	}
-
 }
