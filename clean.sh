@@ -4,7 +4,7 @@ rm -f md2021.jar
 # CLASS=`find . -name "*.class"`
 ## so we have to missuse jar as a workaround
 jar cf temp.jar .
-CLASS=`jar tf temp.jar | grep ".class"`
+CLASS=`jar tf temp.jar | grep "\.class"`
 rm temp.jar
 ## end workaround
 
