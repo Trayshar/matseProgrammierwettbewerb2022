@@ -7,6 +7,6 @@
 
 for i in `ls input_files`; do
 	echo "---"
-	java -jar md2021.jar -i input_files/$i -r result_files/$i.out
+	timeout 1m java -jar md2021.jar -i input_files/$i -r result_files/$i.out
 	./check.sh  input_files/$i result_files/$i.out
 done
