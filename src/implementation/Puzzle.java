@@ -1,5 +1,6 @@
 package implementation;
 
+// see ../mdw2021/IPuzzle.java for comments about implementation of functions below
 import mdw2021.IPuzzle;
 
 public class Puzzle implements IPuzzle {
