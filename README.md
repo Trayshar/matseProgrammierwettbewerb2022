@@ -1,4 +1,4 @@
-# First steps Programmierwettbewerb
+# Erste Schritte Programmierwettbewerb
 Um eine Lösung für den Wettbewerb einzureichen wird einfach das Interface IPuzzle implementiert.
 Ein Dummy-Version der zu implementierenden Klasse findet sich an der folgenden Stelle im Repository:
 
