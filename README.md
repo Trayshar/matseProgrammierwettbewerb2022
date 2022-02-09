@@ -1,4 +1,9 @@
-# Erste Schritte Programmierwettbewerb
+# Programmierwettbewerb 2022
+
+## Aufgabenstellung
+Die Aufgabenstellung in Textform befindet sich [hier](mdw2022.pdf).
+
+## Kontinuierliche Einreichung der Lösungen
 Um eine Lösung für den Wettbewerb einzureichen wird einfach das Interface IPuzzle implementiert.
 Ein Dummy-Version der zu implementierenden Klasse findet sich an der folgenden Stelle im Repository:
 
