@@ -1,30 +1,57 @@
 package implementation;
 
-// see ../mdw2021/IPuzzle.java for comments about implementation of functions below
+import abstractions.cube.ICube;
 import mdw2021.IPuzzle;
 
+import java.io.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+
 public class Puzzle implements IPuzzle {
-	
-	public Puzzle() {		
-	}
+
+	private int dimensionX, dimensionY, dimensionZ;
+	private ICube[] cubes;
+	private PuzzleSolution solution;
 
 	public void readInput(String filename) {
+		ArrayList<ICube> cubes = new ArrayList<>();
+		try {
+			BufferedReader reader = new BufferedReader(new FileReader(filename));
+			reader.lines().filter(s -> !s.startsWith("//")).forEachOrdered(s -> {
+				if(s.startsWith("Dimension")) {
+					var tmp = s.substring(10).split(",");
+					System.out.println(Arrays.toString(tmp));
+					this.dimensionX = Integer.parseInt(tmp[0]);
+					this.dimensionY = Integer.parseInt(tmp[1]);
+					this.dimensionZ = Integer.parseInt(tmp[2]);
+				}else {
+					cubes.add(GigaFactory.readFromRaw(s));
+				}
+			});
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+			return;
+		}
+
+		this.cubes = cubes.toArray(new ICube[0]);
 	}
 
 	public void solve() {
-		// just simulating some compute time
-		// can be removed after implementation 
-		try {
-			Thread.sleep(1000);
-		} catch (InterruptedException e) {
-		}
+		this.solution = GigaFactory.constructSolver().solve(dimensionX, dimensionY, dimensionZ, cubes);
 	}
 
 	public boolean hasSolution() {
-		return false;
+		return this.solution != null;
 	}
 
 	public void writeResult(String filename) {
+		try {
+			FileWriter fw = new FileWriter(filename);
+			fw.write(solution.serialize());
+			fw.flush();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
