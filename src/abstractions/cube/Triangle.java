@@ -1,16 +1,59 @@
 package abstractions.cube;
 
 public enum Triangle {
-    None, BottomLeft, UpperLeft, UpperRight, BottomRight, Any;
+    None, BottomLeft, TopLeft, TopRight, BottomRight, Any;
 
     public int serialize() {
         if(this == Any) throw new UnsupportedOperationException("Cannot serialize filter value \"Any\"!");
         return this.ordinal();
     }
 
-    public static Triangle valueOf(int i) {
-        assert i < Triangle.values().length;
+    public Triangle getOpposite() {
+        switch (this) {
+            case None -> {
+                return None;
+            }
+            case BottomLeft -> {
+                return TopRight;
+            }
+            case TopLeft -> {
+                return BottomRight;
+            }
+            case TopRight -> {
+                return BottomLeft;
+            }
+            case BottomRight -> {
+                return TopLeft;
+            }
+            case Any -> {
+                // Throw exception here?
+                return Any;
+            }
+        }
 
-        return Triangle.values()[i];
+        // This should not happen
+        throw new UnsupportedOperationException("Triangle " + this + " does not exist!");
+    }
+
+    /**
+     * Enum.values() clones the array to stop modification of the enum data (God, I sometimes hate this langauge).
+     * We need performance, so we don't care about safety.
+     */
+    private static final Triangle[] values = values();
+
+    /**
+     * Faster brother of Enum.values(). DO NOT MODIFY THE VALUES RETURNED
+     */
+    public static Triangle[] getValues() {
+        return values;
+    }
+
+    /**
+     * Returns the orientation for the given ordinal. DO NOT MODIFY THE VALUE RETURNED
+     */
+    public static Triangle valueOf(int ordinal) {
+        assert ordinal >= 0 && ordinal < values.length;
+
+        return values[ordinal];
     }
 }

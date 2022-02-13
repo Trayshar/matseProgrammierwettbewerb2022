@@ -2,9 +2,12 @@ package implementation.cube;
 
 import abstractions.Orientation;
 import abstractions.cube.ICube;
+import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.stream.Stream;
 
 /**
  * Cube implementation that caches all possible rotations.
@@ -38,20 +41,34 @@ public class CachedCube implements ICube {
         this.triangles = (int) Arrays.stream(triangles).filter(triangle -> triangle != Triangle.None).count();
     }
 
-    /**
-     * Sets the orientation of this cube
-     */
+    @Override
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }
 
     @Override
     public Triangle getTriangle(Side side) {
-        return Triangle.valueOf( data[orientation.ordinal()][side.ordinal()] );
+        return Triangle.valueOf( this.data[this.orientation.ordinal()][side.ordinal()] );
+    }
+
+    @Override
+    public Triangle getTriangle(Side side, Orientation orientation) {
+        return Triangle.valueOf( this.data[orientation.ordinal()][side.ordinal()] );
     }
 
     @Override
     public int getIdentifier() {
-        return identifier;
+        return this.identifier;
+    }
+
+    @Override
+    public Stream<Orientation> match(ICubeFilter filter) {
+        ArrayList<Orientation> list = new ArrayList<>(24);
+        for (int i = 0; i < 24; i++) {
+            if(filter.match(this.data[i])) {
+                list.add(Orientation.get(i));
+            }
+        }
+        return list.stream();
     }
 }

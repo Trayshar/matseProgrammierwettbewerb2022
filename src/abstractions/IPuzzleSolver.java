@@ -1,8 +1,7 @@
 package abstractions;
 
-import abstractions.cube.ICubeSet;
-import implementation.PuzzleSolution;
+import implementation.cube.StaticCubeSet;
 
 public interface IPuzzleSolver {
-    PuzzleSolution solve(int dimensionX, int dimensionY, int dimensionZ, ICubeSet cubes);
+    IPuzzelSolution solve(int dimensionX, int dimensionY, int dimensionZ, StaticCubeSet cubes);
 }

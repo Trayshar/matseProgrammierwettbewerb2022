@@ -1,22 +1,43 @@
 package abstractions.cube;
 
-import abstractions.Axis;
+import abstractions.Orientation;
+
+import java.util.stream.Stream;
 
 /**
  * Represents a single cube with 6 sides, each having one triangle (or not)
  */
 public interface ICube extends Cloneable {
 
-//    default void rotate(Axis axis) {
-//        this.rotate(axis, 1);
-//    }
-//
-//    void rotate(Axis axis, int amount);
+    /**
+     * Sets the orientation of this cube
+     */
+    void setOrientation(Orientation orientation);
 
+    /**
+     * Returns the triangle at the given side in its current orientation
+     */
     Triangle getTriangle(Side side);
 
+    /**
+     * Returns the triangle at the given side with the given orientation. Does not modify the orientation of this cube.
+     */
+    Triangle getTriangle(Side side, Orientation orientation);
+
+    /**
+     * Returns the unique identifier of this cube.
+     */
     int getIdentifier();
 
+    /**
+     * Returns a {@link Stream} of all possible {@link Orientation}s this cube matches the filter in.
+     * The resulting stream may be empty.
+     */
+    Stream<Orientation> match(ICubeFilter filter);
+
+    /**
+     * Serializes the cube with its current orientation.
+     */
     default String serialize() {
         StringBuilder b = new StringBuilder("Teil ");
         b.append(this.getIdentifier());
@@ -28,6 +49,9 @@ public interface ICube extends Cloneable {
         return b.toString().trim();
     }
 
+    /**
+     * Side of a cube. Rather self-explanatory.
+     */
     enum Side {
         Up(0, 1, 0), Left(-1, 0, 0), Front(0, 0, 1), Right(1, 0, 0), Back(0, 0, -1), Down(0, -1, 0);
 

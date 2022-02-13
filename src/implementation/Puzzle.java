@@ -1,7 +1,7 @@
 package implementation;
 
+import abstractions.IPuzzelSolution;
 import abstractions.cube.ICube;
-import abstractions.cube.ICubeSet;
 import implementation.cube.StaticCubeSet;
 import mdw2021.IPuzzle;
 
@@ -12,8 +12,8 @@ import java.util.Arrays;
 public class Puzzle implements IPuzzle {
 
 	private int dimensionX, dimensionY, dimensionZ;
-	private ICubeSet cubes;
-	private PuzzleSolution solution;
+	private StaticCubeSet cubes;
+	private IPuzzelSolution solution;
 
 	public void readInput(String filename) {
 		ArrayList<ICube> cubes = new ArrayList<>();

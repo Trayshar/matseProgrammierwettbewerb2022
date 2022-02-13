@@ -1,8 +1,9 @@
 package implementation;
 
+import abstractions.IPuzzelSolution;
 import abstractions.cube.ICube;
 
-public class PuzzleSolution {
+public class PuzzleSolution implements IPuzzelSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     public final ICube[][][] cubes;
 
@@ -13,6 +14,7 @@ public class PuzzleSolution {
         this.cubes = new ICube[dimensionX][dimensionY][dimensionZ];
     }
 
+    @Override
     public String serialize() {
         StringBuilder b = new StringBuilder();
         b.append("Dimension ");

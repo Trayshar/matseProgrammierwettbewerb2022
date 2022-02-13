@@ -76,7 +76,7 @@ public enum Orientation{
     }
 
     /**
-     * Enum.values() clones the array to stop modification of the enum (God, I sometimes hate this langauge).
+     * Enum.values() clones the array to stop modification of the enum data (God, I sometimes hate this langauge).
      * We need performance, so we don't care about safety.
      */
     private static final Orientation[] values = values();
