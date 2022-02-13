@@ -1,58 +1,101 @@
 package abstractions;
 
+import java.util.Arrays;
+import java.util.stream.Stream;
+
 /**
- * Quaternion orientation
+ * Orientation based on Quaternions. All orientations are relative to the identity orientation
  */
 public enum Orientation{
-    ;
+    /**
+     * Identity orientation.
+     * <br>
+     * Quaternion: 1.0 + 0.0i + 0.0j + 0.0k
+     */
+    Alpha(new byte[]{0, 1, 2, 3, 4, 5}, new byte[]{0, 0, 0, 0, 0, 0}),
+    /** Quaternion: 0.0 + 1.0i + 0.0j + 0.0k */
+    Beta(new byte[]{5, 1, 4, 3, 2, 0}, new byte[]{0, 2, 2, 2, 2, 0}),
+    /** Quaternion: 0.0 + 0.0i + 1.0j + 0.0k */
+    Gamma(new byte[]{5, 3, 2, 1, 4, 0}, new byte[]{2, 2, 2, 2, 2, 2}),
+    /** Quaternion: 0.0 + 0.0i + 0.0j + 1.0k */
+    Delta(new byte[]{0, 3, 4, 1, 2, 5}, new byte[]{2, 0, 0, 0, 0, 2}),
+    /** Quaternion: 0.71 - 0.71i + 0.0j + 0.0k */
+    Epsilon(new byte[]{4, 1, 0, 3, 5, 2}, new byte[]{2, 3, 0, 1, 2, 0}),
+    /** Quaternion: 0.71 + 0.71i + 0.0j + 0.0k */
+    Zeta(new byte[]{2, 1, 5, 3, 0, 4}, new byte[]{0, 1, 0, 3, 2, 2}),
+    /** Quaternion: 0.0 + 0.0i + 0.71j + 0.71k */
+    Eta(new byte[]{4, 3, 5, 1, 0, 2}, new byte[]{0, 1, 2, 3, 0, 2}),
+    /** Quaternion: 0.0 + 0.0i - 0.71j + 0.71k */
+    Theta(new byte[]{2, 3, 0, 1, 5, 4}, new byte[]{2, 3, 2, 1, 0, 0}),
+    /** Quaternion: 0.0 + 0.71i + 0.71j + 0.0k */
+    Iota(new byte[]{5, 2, 1, 4, 3, 0}, new byte[]{1, 2, 2, 2, 2, 3}),
+    /** Quaternion: 0.71 + 0.0i + 0.0j - 0.71k */
+    Kappa(new byte[]{0, 4, 1, 2, 3, 5}, new byte[]{1, 0, 0, 0, 0, 3}),
+    /** Quaternion: 0.71 + 0.0i + 0.0j + 0.71k */
+    Lambda(new byte[]{0, 2, 3, 4, 1, 5}, new byte[]{3, 0, 0, 0, 0, 1}),
+    /** Quaternion: 0.0 - 0.71i + 0.71j + 0.0k */
+    Mu(new byte[]{5, 4, 3, 2, 1, 0}, new byte[]{3, 2, 2, 2, 2, 1}),
+    /** Quaternion: 0.5 - 0.5i - 0.5j - 0.5k */
+    Nu(new byte[]{4, 5, 1, 0, 3, 2}, new byte[]{3, 2, 3, 0, 1, 3}),
+    /** Quaternion: 0.5 + 0.5i + 0.5j - 0.5k */
+    Xi(new byte[]{2, 0, 1, 5, 3, 4}, new byte[]{1, 2, 1, 0, 3, 1}),
+    /** Quaternion: 0.5 - 0.5i + 0.5j + 0.5k */
+    Omicron(new byte[]{4, 0, 3, 5, 1, 2}, new byte[]{1, 0, 1, 2, 3, 1}),
+    /** Quaternion: 0.5 + 0.5i - 0.5j + 0.5k */
+    Pi(new byte[]{2, 5, 3, 0, 1, 4}, new byte[]{3, 0, 3, 2, 1, 3}),
+    /** Quaternion: 0.5 + 0.5i + 0.5j + 0.5k */
+    Rho(new byte[]{3, 2, 5, 4, 0, 1}, new byte[]{0, 1, 1, 3, 1, 2}),
+    /** Quaternion: 0.5 - 0.5i + 0.5j - 0.5k */
+    Sigma(new byte[]{3, 4, 0, 2, 5, 1}, new byte[]{2, 3, 1, 1, 1, 0}),
+    /** Quaternion: 0.5 - 0.5i - 0.5j + 0.5k */
+    Tau(new byte[]{1, 2, 0, 4, 5, 3}, new byte[]{2, 3, 3, 1, 3, 0}),
+    /** Quaternion: 0.5 + 0.5i - 0.5j - 0.5k */
+    Upsilon(new byte[]{1, 4, 5, 2, 0, 3}, new byte[]{0, 1, 3, 3, 3, 2}),
+    /** Quaternion: 0.71 + 0.0i + 0.71j + 0.0k */
+    Phi(new byte[]{3, 0, 2, 5, 4, 1}, new byte[]{1, 1, 1, 1, 3, 1}),
+    /** Quaternion: 0.0 + 0.71i + 0.0j + 0.71k */
+    Chi(new byte[]{3, 5, 4, 0, 2, 1}, new byte[]{3, 1, 3, 1, 1, 3}),
+    /** Quaternion: 0.71 + 0.0i - 0.71j + 0.0k */
+    Psi(new byte[]{1, 5, 2, 0, 4, 3}, new byte[]{3, 3, 3, 3, 1, 3}),
+    /** Quaternion: 0.0 - 0.71i + 0.0j + 0.71k */
+    Omega(new byte[]{1, 0, 4, 5, 2, 3}, new byte[]{1, 3, 1, 3, 3, 1});
 
+    /** Where each side of the cube is after applying this orientation */
+    public final byte[] side;
 
-    private final float q1, q2, q3, q4;
+    /** How the triangles on each side are affected. Just add this */
+    public final byte[] triangleOffset;
 
-    Orientation(float q1, float q2, float q3, float q4) {
-        this.q1 = q1;
-        this.q2 = q2;
-        this.q3 = q3;
-        this.q4 = q4;
+    Orientation(byte[] side, byte[] triangleOffset) {
+        this.side = side;
+        this.triangleOffset = triangleOffset;
     }
 
-//    public Orientation rotate(Axis axis, int amount) {
-//        int angle = amount % 4;
-//        if(angle == 0) return this;
-//
-//        int x = this.x + axis.getX() * amount;
-//        int y = this.y + axis.getY() * amount;
-//        int z = this.z + axis.getZ() * amount;
-//
-//        return Orientation.get(x % 4, y % 3, z % 2);
-//    }
-
-    private static final Orientation[][][][] mappedValues = new Orientation[4][6][6][6];
-    static {
-        for (Orientation o : values()) {
-            mappedValues[getIndex(o.q1)][getIndex(o.q2)][getIndex(o.q3)][getIndex(o.q4)] = o;
-        }
+    public static Stream<Orientation> stream() {
+        return Arrays.stream(values());
     }
 
-    private static Orientation get(float q1, float q2, float q3, float q4) {
-        return mappedValues[getIndex(q1)][getIndex(q2)][getIndex(q3)][getIndex(q4)];
+    /**
+     * Enum.values() clones the array to stop modification of the enum (God, I sometimes hate this langauge).
+     * We need performance, so we don't care about safety.
+     */
+    private static final Orientation[] values = values();
+
+    /**
+     * Faster brother of Enum.values(). DO NOT MODIFY THE VALUES RETURNED
+     */
+    public static Orientation[] getValues() {
+        return values;
     }
 
-    private static final float HalfSqrt2 = (float) (Math.sqrt(2) * 0.5d);
+    /**
+     * Returns the orientation for the given ordinal. DO NOT MODIFY THE VALUE RETURNED
+     */
+    public static Orientation get(int ordinal) {
+        assert ordinal > 0 && ordinal < 24;
 
-    private static int getIndex(float q) {
-        return Math.round(q * q * 4f) * (q < 0 ? 3 : 1);
+        return values[ordinal];
     }
 
-    private static float getQuaternion(int index) {
-        switch(index) {
-            case 0: return 0f;
-            case 1: return 0.5f;
-            case 2: return HalfSqrt2;
-            case 3: return -0.5f;
-            case 4: return 1f;
-            case 6: return -1f * HalfSqrt2;
-            default: throw new UnsupportedOperationException("Illegal index \"" + index + "\"!");
-        }
-    }
+    //TODO: Implement rotation
 }

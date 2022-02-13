@@ -7,11 +7,11 @@ import abstractions.Axis;
  */
 public interface ICube extends Cloneable {
 
-    default void rotate(Axis axis) {
-        this.rotate(axis, 1);
-    }
-
-    void rotate(Axis axis, int amount);
+//    default void rotate(Axis axis) {
+//        this.rotate(axis, 1);
+//    }
+//
+//    void rotate(Axis axis, int amount);
 
     Triangle getTriangle(Side side);
 
