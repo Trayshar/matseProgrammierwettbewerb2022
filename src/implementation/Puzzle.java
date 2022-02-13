@@ -1,6 +1,8 @@
 package implementation;
 
 import abstractions.cube.ICube;
+import abstractions.cube.ICubeSet;
+import implementation.cube.StaticCubeSet;
 import mdw2021.IPuzzle;
 
 import java.io.*;
@@ -10,7 +12,7 @@ import java.util.Arrays;
 public class Puzzle implements IPuzzle {
 
 	private int dimensionX, dimensionY, dimensionZ;
-	private ICube[] cubes;
+	private ICubeSet cubes;
 	private PuzzleSolution solution;
 
 	public void readInput(String filename) {
@@ -33,7 +35,7 @@ public class Puzzle implements IPuzzle {
 			return;
 		}
 
-		this.cubes = cubes.toArray(new ICube[0]);
+		this.cubes = new StaticCubeSet(cubes.toArray(new ICube[0]));
 	}
 
 	public void solve() {
