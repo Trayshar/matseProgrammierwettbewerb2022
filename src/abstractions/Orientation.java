@@ -4,7 +4,8 @@ import java.util.Arrays;
 import java.util.stream.Stream;
 
 /**
- * Orientation based on Quaternions. All orientations are relative to the identity orientation
+ * Orientation based on Quaternions. All orientations are relative to the identity orientation.
+ * See "/scripts/quaternions.py" on how these values were generated.
  */
 public enum Orientation{
     /**
