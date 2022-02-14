@@ -1,4 +1,4 @@
-package implementation.cube;
+package implementation.cube.filter;
 
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
@@ -62,6 +62,19 @@ public class ByteCubeFilter implements ICubeFilter {
     public ByteCubeFilter clone() {
         // Can't use native clone here since "sides" is a final array, which is cloned by reference
         return new ByteCubeFilter(this.sides);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        ByteCubeFilter that = (ByteCubeFilter) o;
+        return Arrays.equals(sides, that.sides);
+    }
+
+    @Override
+    public int hashCode() {
+        return Arrays.hashCode(sides);
     }
 
     @Override

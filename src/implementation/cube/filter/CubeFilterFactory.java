@@ -1,4 +1,4 @@
-package implementation.cube;
+package implementation.cube.filter;
 
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;

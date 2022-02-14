@@ -2,9 +2,7 @@ package implementation;
 
 import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
-import abstractions.cube.Triangle;
-import implementation.cube.ByteCubeFilter;
-import implementation.cube.StaticCubeSet;
+import implementation.cube.set.StaticCubeSet;
 import mdw2021.IPuzzle;
 
 import java.io.*;
@@ -42,12 +40,6 @@ public class Puzzle implements IPuzzle {
 
 	public void solve() {
 		this.solution = GigaFactory.constructSolver().solve(dimensionX, dimensionY, dimensionZ, cubes);
-
-		ByteCubeFilter f = new ByteCubeFilter(new byte[]{0, 1, 2, 3, 4, 1});
-		ByteCubeFilter g = f.clone();
-		g.setSide(ICube.Side.Up, Triangle.Any);
-		System.out.println(f);
-		System.out.println(g);
 	}
 
 	public boolean hasSolution() {

@@ -1,4 +1,4 @@
-package implementation;
+package implementation.solution;
 
 import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
@@ -6,12 +6,15 @@ import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.filter.CubeFilterFactory;
 
-public class PuzzleSolution implements IPuzzleSolution {
+import java.util.ArrayDeque;
+
+public class DynamicPuzzleSolution implements IPuzzleSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     private final ICube[][][] cubes;
     private final ICubeFilter[][][] filters;
+    private final ArrayDeque<SetOperation> operations = new ArrayDeque<>();
 
-    public PuzzleSolution(int dimensionX, int dimensionY, int dimensionZ) {
+    public DynamicPuzzleSolution(int dimensionX, int dimensionY, int dimensionZ) {
         this.dimensionX = dimensionX;
         this.dimensionY = dimensionY;
         this.dimensionZ = dimensionZ;
@@ -43,17 +46,31 @@ public class PuzzleSolution implements IPuzzleSolution {
         for(ICube.Side s : ICube.Side.values()) {
             int x2 = x + s.x, y2 = y + s.y, z2 = z + s.z;
             if(valid(x2, dimensionX) && valid(y2, dimensionY) && valid(z2, dimensionZ)) {
-                this.filters[x][y][z].setSide(s.getOpposite(), cube.getTriangle(s).getOpposite());
+                this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getOpposite());
             }
         }
 
         ICube tmp = this.cubes[x][y][z];
+        this.operations.addLast(new SetOperation(x, y, z, tmp));
         this.cubes[x][y][z] = cube;
         return tmp;
     }
 
     private boolean valid(int coord, int max) {
         return coord >= 0 && coord < max;
+    }
+
+    public boolean undo() {
+        SetOperation op = this.operations.pollLast();
+        if (op == null) return false;
+        for(ICube.Side s : ICube.Side.values()) {
+            int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
+            if(valid(x2, dimensionX) && valid(y2, dimensionY) && valid(z2, dimensionZ)) {
+                this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
+            }
+        }
+        this.cubes[op.x][op.y][op.z] = op.previous;
+        return true;
     }
 
     @Override
@@ -87,4 +104,9 @@ public class PuzzleSolution implements IPuzzleSolution {
 
         return b.toString();
     }
+
+    /**
+     * Contains an atomic operation made on this solution.
+     */
+    private record SetOperation(int x, int y, int z, ICube previous) {}
 }

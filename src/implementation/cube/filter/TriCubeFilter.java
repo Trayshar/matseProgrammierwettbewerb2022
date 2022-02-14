@@ -1,4 +1,4 @@
-package implementation.cube;
+package implementation.cube.filter;
 
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
@@ -8,6 +8,7 @@ import abstractions.cube.Triangle;
  * {@link ICubeFilter} implementation that uses triangle arrays for all its operations.
  * Use the match(Triangle...) function for optimal performance.
  */
+@Deprecated
 public class TriCubeFilter implements ICubeFilter {
 
     private final Triangle[] sides = new Triangle[6];

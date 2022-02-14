@@ -1,10 +1,9 @@
-package implementation.cube;
+package implementation.cube.set;
 
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeSet;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.stream.Stream;
 
 public class StaticCubeSet implements ICubeSet {
@@ -27,10 +26,5 @@ public class StaticCubeSet implements ICubeSet {
     @Override
     public Stream<ICube> stream() {
         return Arrays.stream(cubes);
-    }
-
-    @Override
-    public Iterator<ICube> iterator() {
-        return Arrays.stream(cubes).iterator();
     }
 }

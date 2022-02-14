@@ -3,17 +3,22 @@ package implementation.solver;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.cube.ICube;
+import abstractions.cube.ICubeSet;
 import implementation.PuzzleSolution;
-import implementation.cube.StaticCubeSet;
+import implementation.cube.set.CachedCubeSet;
 
 public class PathfindingSolver implements IPuzzleSolver {
 
     @Override
-    public IPuzzleSolution solve(int dimensionX, int dimensionY, int dimensionZ, StaticCubeSet cubes) {
+    public IPuzzleSolution solve(int dimensionX, int dimensionY, int dimensionZ, ICubeSet givenCubes) {
         PuzzleSolution s = new PuzzleSolution(dimensionX, dimensionY, dimensionZ);
 
-        //TODO: Setze Seed
-        ICube seed = null;
+        CachedCubeSet cubes;
+        if(givenCubes.getClass() != CachedCubeSet.class) {
+            cubes = new CachedCubeSet(givenCubes.stream().toArray(ICube[]::new));
+        }else cubes = (CachedCubeSet) givenCubes;
+
+
 
 
         // Steps:
