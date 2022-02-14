@@ -13,7 +13,8 @@ import java.util.stream.Stream;
  * Cube implementation that caches all possible rotations.
  */
 public class CachedCube implements ICube {
-    private final byte[][] data = new byte[24][6];
+    /** IMMUTABLE */
+    private final byte[][] data;
     private Orientation orientation = Orientation.Alpha;
     /** The unique number of this cube */
     public final int identifier;
@@ -27,6 +28,7 @@ public class CachedCube implements ICube {
     public CachedCube(int identifier, Triangle... triangles) {
         assert triangles.length == 6;
 
+        this.data = new byte[24][6];
         this.identifier = identifier;
 
         for (int i = 0; i < 24; i++) {
@@ -39,6 +41,23 @@ public class CachedCube implements ICube {
         }
 
         this.triangles = (int) Arrays.stream(triangles).filter(triangle -> triangle != Triangle.None).count();
+    }
+
+    private CachedCube(byte[][] data, Orientation orientation, int identifier, int triangles) {
+        this.data = data;
+        this.orientation = orientation;
+        this.identifier = identifier;
+        this.triangles = triangles;
+    }
+
+    @Override
+    public CachedCube clone() {
+        try {
+            return (CachedCube) super.clone();
+        } catch (CloneNotSupportedException e) { // shouldn't happen
+            System.err.println("Couldn't natively clone CachedCube: " + e.getLocalizedMessage());
+            return new CachedCube(this.data, this.orientation, this.identifier, this.triangles);
+        }
     }
 
     @Override

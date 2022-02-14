@@ -1,10 +1,10 @@
 package abstractions.cube;
 
 public enum Triangle {
-    None, BottomLeft, TopLeft, TopRight, BottomRight, Any;
+    None, BottomLeft, TopLeft, TopRight, BottomRight, Any, AnyNotNone;
 
     public int serialize() {
-        if(this == Any) throw new UnsupportedOperationException("Cannot serialize filter value \"Any\"!");
+        if(this == Any || this == AnyNotNone) throw new UnsupportedOperationException("Cannot serialize filter value \"" + this + "\"!");
         return this.ordinal();
     }
 
@@ -28,6 +28,10 @@ public enum Triangle {
             case Any -> {
                 // Throw exception here?
                 return Any;
+            }
+            case AnyNotNone -> {
+                // Throw exception here?
+                return AnyNotNone;
             }
         }
 

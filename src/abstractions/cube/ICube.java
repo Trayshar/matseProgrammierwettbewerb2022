@@ -53,7 +53,7 @@ public interface ICube extends Cloneable {
      * Side of a cube. Rather self-explanatory.
      */
     enum Side {
-        Up(0, 1, 0), Left(-1, 0, 0), Front(0, 0, 1), Right(1, 0, 0), Back(0, 0, -1), Down(0, -1, 0);
+        Up(0, 0, 1), Left(-1, 0, 0), Front(0, -1, 0), Right(1, 0, 0), Back(0, 1, 0), Down(0, 0, -1);
 
         public final int x, y, z;
 
@@ -61,6 +61,30 @@ public interface ICube extends Cloneable {
             this.x = x;
             this.y = y;
             this.z = z;
+        }
+
+        public Side getOpposite() {
+            switch(this) {
+                case Up -> {
+                    return Side.Down;
+                }
+                case Left -> {
+                    return Side.Right;
+                }
+                case Front -> {
+                    return Side.Back;
+                }
+                case Right -> {
+                    return Side.Left;
+                }
+                case Back -> {
+                    return Side.Front;
+                }
+                case Down -> {
+                    return Side.Up;
+                }
+            }
+            throw new IllegalStateException("Unknown side \"" + this + "\"!");
         }
     }
 }
