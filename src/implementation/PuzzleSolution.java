@@ -1,12 +1,12 @@
 package implementation;
 
-import abstractions.IPuzzelSolution;
+import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.ByteCubeFilter;
 
-public class PuzzleSolution implements IPuzzelSolution {
+public class PuzzleSolution implements IPuzzleSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     private final ICube[][][] cubes;
     private final ICubeFilter[][][] filters;

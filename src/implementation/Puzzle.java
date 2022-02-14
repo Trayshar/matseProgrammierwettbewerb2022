@@ -1,6 +1,6 @@
 package implementation;
 
-import abstractions.IPuzzelSolution;
+import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
 import abstractions.cube.Triangle;
 import implementation.cube.ByteCubeFilter;
@@ -15,7 +15,7 @@ public class Puzzle implements IPuzzle {
 
 	private int dimensionX, dimensionY, dimensionZ;
 	private StaticCubeSet cubes;
-	private IPuzzelSolution solution;
+	private IPuzzleSolution solution;
 
 	public void readInput(String filename) {
 		ArrayList<ICube> cubes = new ArrayList<>();

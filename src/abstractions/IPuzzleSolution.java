@@ -2,7 +2,7 @@ package abstractions;
 
 import abstractions.cube.ICube;
 
-public interface IPuzzelSolution {
+public interface IPuzzleSolution {
     /**
      * Serializes the solution into a String which is written into the returned file
      */
