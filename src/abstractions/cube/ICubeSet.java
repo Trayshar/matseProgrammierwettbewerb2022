@@ -28,7 +28,7 @@ public interface ICubeSet extends Iterable<ICube>, Cloneable {
     Stream<ICube> stream();
 
     /**
-     * Returns a stream over all cubes matching the given filter
+     * Returns a stream over all cubes matching the given filter; Might return an empty stream, but never null.
      */
     default Stream<ICube> matching(ICubeFilter filter) {
         return this.stream().filter(filter::match);

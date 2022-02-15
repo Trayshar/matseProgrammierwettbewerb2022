@@ -21,6 +21,9 @@ public class CachedCubeSet implements ICubeSet {
         this.map.put(null, cubes);
     }
 
+    /**
+     * Caches the query
+     */
     private void cache(ICubeFilter filter) {
         this.map.put(filter, (ICube[]) Arrays.stream(this.map.get(null)).filter(filter::match).toArray());
     }

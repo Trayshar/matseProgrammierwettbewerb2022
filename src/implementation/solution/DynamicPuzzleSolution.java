@@ -56,6 +56,31 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         return tmp;
     }
 
+    @Override
+    public ICube getSolutionAt(int x, int y, int z) {
+        return this.cubes[x][y][z];
+    }
+
+    @Override
+    public ICubeFilter getFilterAt(int x, int y, int z) {
+        return this.filters[x][y][z];
+    }
+
+    @Override
+    public int getDimensionX() {
+        return this.dimensionX;
+    }
+
+    @Override
+    public int getDimensionY() {
+        return this.dimensionY;
+    }
+
+    @Override
+    public int getDimensionZ() {
+        return this.dimensionZ;
+    }
+
     private boolean valid(int coord, int max) {
         return coord >= 0 && coord < max;
     }
@@ -63,46 +88,14 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     public boolean undo() {
         SetOperation op = this.operations.pollLast();
         if (op == null) return false;
-        for(ICube.Side s : ICube.Side.values()) {
+        for (ICube.Side s : ICube.Side.values()) {
             int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
-            if(valid(x2, dimensionX) && valid(y2, dimensionY) && valid(z2, dimensionZ)) {
+            if (valid(x2, dimensionX) && valid(y2, dimensionY) && valid(z2, dimensionZ)) {
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
             }
         }
         this.cubes[op.x][op.y][op.z] = op.previous;
         return true;
-    }
-
-    @Override
-    public String serialize() {
-        StringBuilder b = new StringBuilder();
-        b.append("Dimension ");
-        b.append(dimensionX);
-        b.append('c');
-        b.append(dimensionY);
-        b.append('c');
-        b.append(dimensionZ);
-        b.append('c');
-        b.append('\n');
-
-        for (int x = 0; x < dimensionX; x++) {
-            for (int y = 0; y < dimensionY; y++) {
-                for (int z = 0; z < dimensionZ; z++) {
-                    b.append('[');
-                    b.append(x + 1);
-                    b.append(',');
-                    b.append(y + 1);
-                    b.append(',');
-                    b.append(z + 1);
-                    b.append(',');
-                    b.append("] ");
-                    b.append(cubes[x][y][z].serialize());
-                    b.append('\n');
-                }
-            }
-        }
-
-        return b.toString();
     }
 
     /**
