@@ -2,17 +2,21 @@ package implementation;
 
 import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
+import abstractions.cube.Triangle;
+import implementation.cube.CachedCube;
 import implementation.cube.set.StaticCubeSet;
+import implementation.solver.StagedSolver;
 import mdw2021.IPuzzle;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Objects;
 
 public class Puzzle implements IPuzzle {
 
 	private int dimensionX, dimensionY, dimensionZ;
-	private StaticCubeSet cubes;
+	private ICube[] cubes;
 	private IPuzzleSolution solution;
 
 	public void readInput(String filename) {
@@ -27,7 +31,7 @@ public class Puzzle implements IPuzzle {
 					this.dimensionY = Integer.parseInt(tmp[1]);
 					this.dimensionZ = Integer.parseInt(tmp[2]);
 				}else {
-					cubes.add(GigaFactory.readFromRaw(s));
+					cubes.add(readFromRaw(s));
 				}
 			});
 		} catch (FileNotFoundException e) {
@@ -35,11 +39,11 @@ public class Puzzle implements IPuzzle {
 			return;
 		}
 
-		this.cubes = new StaticCubeSet(cubes.toArray(new ICube[0]));
+		this.cubes = cubes.stream().filter(Objects::nonNull).toArray(ICube[]::new);
 	}
 
 	public void solve() {
-		this.solution = GigaFactory.constructSolver().solve(dimensionX, dimensionY, dimensionZ, cubes);
+		this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(dimensionX, dimensionY, dimensionZ, null);
 	}
 
 	public boolean hasSolution() {
@@ -54,6 +58,14 @@ public class Puzzle implements IPuzzle {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static ICube readFromRaw(String s) {
+		int col = s.indexOf(':');
+		int id = Integer.parseInt(s.substring(5, col));
+		Triangle[] tri = Arrays.stream(s.substring(col + 2).split(" ")).mapToInt(Integer::parseInt).mapToObj(Triangle::valueOf).toArray(Triangle[]::new);
+		System.out.println("Read cube: " + id + ", " + Arrays.toString(tri));
+		return new CachedCube(id, tri);
 	}
 
 }

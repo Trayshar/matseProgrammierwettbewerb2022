@@ -11,11 +11,10 @@ public interface IPuzzleSolution {
         StringBuilder b = new StringBuilder();
         b.append("Dimension ");
         b.append(this.getDimensionX());
-        b.append('c');
+        b.append(',');
         b.append(this.getDimensionY());
-        b.append('c');
+        b.append(',');
         b.append(this.getDimensionZ());
-        b.append('c');
         b.append('\n');
 
         for (int x = 0; x < this.getDimensionX(); x++) {
@@ -27,9 +26,10 @@ public interface IPuzzleSolution {
                     b.append(y + 1);
                     b.append(',');
                     b.append(z + 1);
-                    b.append(',');
                     b.append("] ");
-                    b.append(this.getSolutionAt(x, y, z).serialize());
+                    ICube c = this.getSolutionAt(x, y, z);
+                    if(c != null) b.append(c.serialize());
+                    else b.append("null");
                     b.append('\n');
                 }
             }

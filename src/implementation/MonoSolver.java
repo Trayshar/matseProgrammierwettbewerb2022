@@ -11,6 +11,7 @@ import implementation.cube.filter.CubeFilterFactory;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 
+@Deprecated
 public class MonoSolver {
     /* Immutable */
     public final int dimensionX, dimensionY, dimensionZ;

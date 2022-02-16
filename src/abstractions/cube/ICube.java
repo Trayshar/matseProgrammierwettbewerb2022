@@ -10,6 +10,11 @@ import java.util.stream.Stream;
 public interface ICube extends Cloneable {
 
     /**
+     * Returns a clone of this cube. Should delegate to Object.clone().
+     */
+    ICube cloneCube();
+
+    /**
      * Sets the orientation of this cube
      */
     void setOrientation(Orientation orientation);

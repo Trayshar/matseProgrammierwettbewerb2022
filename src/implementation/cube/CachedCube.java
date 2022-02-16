@@ -61,6 +61,11 @@ public class CachedCube implements ICube {
     }
 
     @Override
+    public ICube cloneCube() {
+        return this.clone();
+    }
+
+    @Override
     public void setOrientation(Orientation orientation) {
         this.orientation = orientation;
     }

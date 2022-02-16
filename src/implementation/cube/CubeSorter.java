@@ -13,7 +13,19 @@ import java.util.stream.Stream;
  */
 public class CubeSorter {
     /** Wrapper for a query result. God, why doesn't this language support tuples... */
-    public record QueryResult(ICube cube, Orientation[] orientations) {}
+    public record QueryResult(ICube cube, Orientation[] orientations) {
+        public int getID() {
+            return this.cube.getIdentifier();
+        }
+
+        public Stream<ICube> stream() {
+            return Arrays.stream(orientations).map(orientation -> {
+                ICube c = cube.cloneCube();
+                c.setOrientation(orientation);
+                return c;
+            });
+        }
+    }
 
     private final HashMap<ICubeFilter, QueryResult[]> queries = new HashMap<>();
     /** Immutable */

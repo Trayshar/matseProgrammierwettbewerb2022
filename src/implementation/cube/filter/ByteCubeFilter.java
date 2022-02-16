@@ -39,8 +39,7 @@ public class ByteCubeFilter implements ICubeFilter {
         for (int i = 0; i < 6; i++) {
             if(this.sides[i] == AnyNotNone) {
                 if(this.sides[i] == None) return false;
-            }
-            if(this.sides[i] != Any) {
+            }else if(this.sides[i] != Any) {
                 if(this.sides[i] != triangles[i]) return false;
             }
         }

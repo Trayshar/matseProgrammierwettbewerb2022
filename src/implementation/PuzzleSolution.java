@@ -6,6 +6,7 @@ import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.filter.CubeFilterFactory;
 
+@Deprecated
 public class PuzzleSolution implements IPuzzleSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     private final ICube[][][] cubes;
@@ -50,6 +51,31 @@ public class PuzzleSolution implements IPuzzleSolution {
         ICube tmp = this.cubes[x][y][z];
         this.cubes[x][y][z] = cube;
         return tmp;
+    }
+
+    @Override
+    public ICube getSolutionAt(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public ICubeFilter getFilterAt(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public int getDimensionX() {
+        return 0;
+    }
+
+    @Override
+    public int getDimensionY() {
+        return 0;
+    }
+
+    @Override
+    public int getDimensionZ() {
+        return 0;
     }
 
     private boolean valid(int coord, int max) {

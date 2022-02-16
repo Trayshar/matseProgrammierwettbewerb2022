@@ -45,7 +45,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         }
         for(ICube.Side s : ICube.Side.values()) {
             int x2 = x + s.x, y2 = y + s.y, z2 = z + s.z;
-            if(valid(x2, dimensionX) && valid(y2, dimensionY) && valid(z2, dimensionZ)) {
+            if(validX(x2) && validY(y2) && validZ(z2)) {
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getOpposite());
             }
         }
@@ -54,6 +54,31 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         this.operations.addLast(new SetOperation(x, y, z, tmp));
         this.cubes[x][y][z] = cube;
         return tmp;
+    }
+
+    public int undo() {
+        SetOperation op = this.operations.pollLast();
+        if (op == null) return -1;
+        for (ICube.Side s : ICube.Side.values()) {
+            int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
+            if (validX(x2) && validY(y2) && validZ(z2)) {
+                this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
+            }
+        }
+        this.cubes[op.x][op.y][op.z] = op.previous;
+        return op.previous.getIdentifier();
+    }
+
+    private boolean validX(int val) {
+        return val >= 0 && val < this.dimensionX;
+    }
+
+    private boolean validY(int val) {
+        return val >= 0 && val < this.dimensionY;
+    }
+
+    private boolean validZ(int val) {
+        return val >= 0 && val < this.dimensionZ;
     }
 
     @Override
@@ -79,23 +104,6 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     @Override
     public int getDimensionZ() {
         return this.dimensionZ;
-    }
-
-    private boolean valid(int coord, int max) {
-        return coord >= 0 && coord < max;
-    }
-
-    public boolean undo() {
-        SetOperation op = this.operations.pollLast();
-        if (op == null) return false;
-        for (ICube.Side s : ICube.Side.values()) {
-            int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
-            if (valid(x2, dimensionX) && valid(y2, dimensionY) && valid(z2, dimensionZ)) {
-                this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
-            }
-        }
-        this.cubes[op.x][op.y][op.z] = op.previous;
-        return true;
     }
 
     /**

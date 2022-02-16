@@ -2,7 +2,9 @@ package implementation;
 
 import abstractions.cube.ICube;
 import abstractions.IPuzzleSolver;
+import implementation.solver.StagedSolver;
 
+@Deprecated
 public final class GigaFactory {
     private GigaFactory() {}
 
