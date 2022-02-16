@@ -21,9 +21,9 @@ public interface IPuzzleSolution {
             for (int y = 0; y < this.getDimensionY(); y++) {
                 for (int z = 0; z < this.getDimensionZ(); z++) {
                     b.append('[');
-                    b.append(x + 1);
+                    b.append(this.getDimensionY() - y); // x = -y
                     b.append(',');
-                    b.append(y + 1);
+                    b.append(x + 1); // y = x
                     b.append(',');
                     b.append(z + 1);
                     b.append("] ");
