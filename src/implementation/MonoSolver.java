@@ -4,13 +4,12 @@ import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
+import implementation.cube.CubeSorter;
+import implementation.cube.CubeSorter.QueryResult;
 import implementation.cube.filter.CubeFilterFactory;
 
 import java.util.ArrayDeque;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.stream.Stream;
 
 public class MonoSolver {
     /* Immutable */
@@ -21,10 +20,7 @@ public class MonoSolver {
     private final ICubeFilter[][][] requirements;
     private final ArrayDeque<SetOperation> operations = new ArrayDeque<>();
     private final HashSet<Integer> usedCubes = new HashSet<>();
-
-    /* Mutable; Only grows, no changes to anything in a query, ever */
-    private final HashMap<ICubeFilter, ICube[]> queries = new HashMap<>();
-
+    private final CubeSorter sorter;
 
     public MonoSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
         this.dimensionX = dimensionX;
@@ -32,7 +28,7 @@ public class MonoSolver {
         this.dimensionZ = dimensionZ;
         this.solution = new ICube[dimensionX][dimensionY][dimensionZ];
         this.requirements = new ICubeFilter[dimensionX][dimensionY][dimensionZ];
-        this.queries.put(null, cubes);
+        this.sorter = new CubeSorter(cubes);
 
         for (int x = 0; x < dimensionX; x++) {
             for (int y = 0; y < dimensionY; y++) {
@@ -46,43 +42,23 @@ public class MonoSolver {
                     if(z == dimensionZ - 1) f.setSide(ICube.Side.Up, Triangle.None);
 
                     this.requirements[x][y][z] = f;
+                    this.sorter.cache(f);
                 }
             }
         }
     }
 
     public MonoSolution solve() {
-        ICube seed = this.matching(requirements[0][0][0]).findAny().orElseThrow();
-        this.set(0, 0, 0, seed);
+        QueryResult seed = this.sorter.matching(requirements[0][0][0]).findAny().orElseThrow();
+        //this.set(0, 0, 0, seed);
 
 
 
         return null;
     }
 
-    private boolean isFree(ICube cube) {
-        return !usedCubes.contains(cube.getIdentifier());
-    }
-
-    private void cache(ICubeFilter filter) {
-        this.queries.put(filter, Arrays.stream(this.queries.get(null)).filter(filter::match).toArray(ICube[]::new));
-    }
-
-    private Stream<ICube> matching(ICubeFilter filter) {
-        if(!queries.containsKey(filter)) this.cache(filter);
-        return Arrays.stream(queries.get(filter)).filter(this::isFree);
-    }
-
-    private boolean validX(int coord) {
-        return coord >= 0 && coord < this.dimensionX;
-    }
-
-    private boolean validY(int coord) {
-        return coord >= 0 && coord < this.dimensionY;
-    }
-
-    private boolean validZ(int coord) {
-        return coord >= 0 && coord < this.dimensionZ;
+    private boolean isFree(QueryResult r) {
+        return !usedCubes.contains(r.cube().getIdentifier());
     }
 
     private void set(int x, int y, int z, ICube cube) {
@@ -116,6 +92,18 @@ public class MonoSolver {
         return true;
     }
 
+    private boolean validX(int val) {
+        return val >= 0 && val < this.dimensionX;
+    }
+
+    private boolean validY(int val) {
+        return val >= 0 && val < this.dimensionY;
+    }
+
+    private boolean validZ(int val) {
+        return val >= 0 && val < this.dimensionZ;
+    }
+
     /**
      * Contains an atomic operation.
      */
@@ -124,16 +112,7 @@ public class MonoSolver {
     /**
      * Solution a MonoSolver may produce
      */
-    public static class MonoSolution implements IPuzzleSolution {
-        private final int dimensionX, dimensionY, dimensionZ;
-        private final ICube[][][] cubes;
-
-        public MonoSolution(int dimensionX, int dimensionY, int dimensionZ, ICube[][][] cubes) {
-            this.dimensionX = dimensionX;
-            this.dimensionY = dimensionY;
-            this.dimensionZ = dimensionZ;
-            this.cubes = cubes;
-        }
+    public record MonoSolution(int dimensionX, int dimensionY, int dimensionZ, ICube[][][] cubes) implements IPuzzleSolution {
 
         @Override
         public ICube set(int x, int y, int z, ICube cube) {
