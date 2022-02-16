@@ -51,13 +51,16 @@ public class Puzzle implements IPuzzle {
 	}
 
 	public void writeResult(String filename) {
+		String s = "ERROR!";
 		try {
 			FileWriter fw = new FileWriter(filename);
-			fw.write(solution.serialize());
+			s = solution.serialize();
+			fw.write(s);
 			fw.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("Got solution: \n" + s);
 	}
 
 	public static ICube readFromRaw(String s) {

@@ -38,10 +38,9 @@ public class StagedSolver implements IPuzzleSolver {
     public IPuzzleSolution solve(int _1, int _2, int _3, ICubeSet _4) {
         ICubeFilter f = solution.getFilterAt(0, 0, 0);
         ICube seed = this.sorter.matching(f)
-                .flatMap(CubeSorter.QueryResult::stream)
                 .findAny()
                 .orElseThrow(() -> new IllegalStateException("No match found for filter " + f));
-        
+
         this.set(seed);
 
         while(setNextCoords()) {
@@ -55,7 +54,10 @@ public class StagedSolver implements IPuzzleSolver {
     private void solve() {
         // x, y, z set here
 
-        if(this.currentQuery == null) this.currentQuery = this.sorter.matching(solution.getFilterAt(x, y, z)).flatMap(CubeSorter.QueryResult::stream).iterator();
+        if(this.currentQuery == null)
+            this.currentQuery = this.sorter.matching(solution.getFilterAt(x, y, z))
+                    .filter(this::isFree)
+                    .iterator();
         if(currentQuery.hasNext()) {
             this.set(currentQuery.next());
         }else { // Nothing found for this step; Stoping and tracing back;
@@ -130,8 +132,8 @@ public class StagedSolver implements IPuzzleSolver {
         this.currentQuery = g.results;
     }
 
-    private boolean isFree(CubeSorter.QueryResult r) {
-        return !usedIDs.contains(r.getID());
+    private boolean isFree(ICube cube) {
+        return !usedIDs.contains(cube.getIdentifier());
     }
 
     private record Stage(int x, int y, int z, Iterator<ICube> results) {}

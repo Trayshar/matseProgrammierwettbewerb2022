@@ -13,7 +13,7 @@ import java.util.stream.Stream;
  */
 public class CubeSorter {
     /** Wrapper for a query result. God, why doesn't this language support tuples... */
-    public record QueryResult(ICube cube, Orientation[] orientations) {
+    private record QueryResult(ICube cube, Orientation[] orientations) {
         public int getID() {
             return this.cube.getIdentifier();
         }
@@ -50,8 +50,8 @@ public class CubeSorter {
     /**
      * Retrieves the result of a query. The resulting stream might be empty.
      */
-    public Stream<QueryResult> matching(ICubeFilter filter) {
+    public Stream<ICube> matching(ICubeFilter filter) {
         if(!queries.containsKey(filter)) this.cache(filter);
-        return Arrays.stream(queries.get(filter));
+        return Arrays.stream(queries.get(filter)).flatMap(QueryResult::stream);
     }
 }
