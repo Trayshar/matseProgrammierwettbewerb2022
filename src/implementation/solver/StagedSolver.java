@@ -38,11 +38,9 @@ public class StagedSolver implements IPuzzleSolver {
     @Override
     public IPuzzleSolution solve(int _1, int _2, int _3, ICubeSet _4) throws PuzzleNotSolvableException {
         ICubeFilter f = solution.getFilterAt(0, 0, 0);
-        ICube seed = this.sorter.matching(f)
-                .findAny()
-                .orElseThrow(() -> new IllegalStateException("No match found for filter " + f));
-
-        this.set(seed);
+        this.currentQuery = this.sorter.matching(f).iterator();
+        if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
+        this.set();
 
         while(setNextCoords()) {
             System.out.printf("Running for coords %d %d %d\n", x, y, z);
@@ -60,8 +58,8 @@ public class StagedSolver implements IPuzzleSolver {
                     .filter(this::isFree)
                     .iterator();
         if(currentQuery.hasNext()) {
-            this.set(currentQuery.next());
-        }else { // Nothing found for this step; Stoping and tracing back;
+            this.set();
+        }else { // Nothing found for this step; Stopping and tracing back;
             this.undo();
             this.solve();
         }
@@ -111,7 +109,8 @@ public class StagedSolver implements IPuzzleSolver {
         return val >= 0 && val < this.dimensionZ;
     }
 
-    private void set(ICube cube) {
+    private void set() {
+        ICube cube = currentQuery.next();
         System.out.printf("[%d][%d][%d] Set %s\n", x, y, z, cube.serialize());
         this.usedIDs.add(cube.getIdentifier());
         this.solved[x][y][z] = true;
@@ -122,7 +121,7 @@ public class StagedSolver implements IPuzzleSolver {
 
     private void undo() throws PuzzleNotSolvableException {
         Stage g = this.stages.pollLast();
-        if(g == null) return;
+        if(g == null) throw new PuzzleNotSolvableException();
 
         int id = this.solution.undo();
         if(id == -1) throw new PuzzleNotSolvableException();
