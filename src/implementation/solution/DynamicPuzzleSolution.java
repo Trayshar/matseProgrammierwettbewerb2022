@@ -25,14 +25,15 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
             for (int y = 0; y < dimensionY; y++) {
                 for (int z = 0; z < dimensionZ; z++) {
                     ICubeFilter f = CubeFilterFactory.from(new byte[]{6, 6, 6, 6, 6, 6});
-                    if(x == 0) f.setSide(ICube.Side.Left, Triangle.None);
-                    if(x == dimensionX - 1) f.setSide(ICube.Side.Right, Triangle.None);
-                    if(y == 0) f.setSide(ICube.Side.Front, Triangle.None);
-                    if(y == dimensionY - 1) f.setSide(ICube.Side.Back, Triangle.None);
+                    if(x == 0) f.setSide(ICube.Side.Back, Triangle.None);
+                    if(x == dimensionX - 1) f.setSide(ICube.Side.Front, Triangle.None);
+                    if(y == 0) f.setSide(ICube.Side.Left, Triangle.None);
+                    if(y == dimensionY - 1) f.setSide(ICube.Side.Right, Triangle.None);
                     if(z == 0) f.setSide(ICube.Side.Down, Triangle.None);
                     if(z == dimensionZ - 1) f.setSide(ICube.Side.Up, Triangle.None);
 
                     this.filters[x][y][z] = f;
+                    System.out.printf("[%d][%d][%d] Set filter %s\n", x, y, z, f);
                 }
             }
         }
