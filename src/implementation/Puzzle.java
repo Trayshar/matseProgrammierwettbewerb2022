@@ -48,6 +48,7 @@ public class Puzzle implements IPuzzle {
 		try {
 			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(dimensionX, dimensionY, dimensionZ, null);
 		} catch (PuzzleNotSolvableException e) {
+			e.printStackTrace();
 			this.solution = new NoSolution(dimensionX, dimensionY, dimensionZ);
 		}
 	}

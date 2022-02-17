@@ -92,6 +92,11 @@ public class CachedCube implements ICube {
     }
 
     @Override
+    public int getNumTriangles() {
+        return this.triangles;
+    }
+
+    @Override
     public Stream<Orientation> match(ICubeFilter filter) {
         ArrayList<Orientation> list = new ArrayList<>(24);
         for (int i = 0; i < 24; i++) {
@@ -100,5 +105,10 @@ public class CachedCube implements ICube {
             }
         }
         return list.stream();
+    }
+
+    @Override
+    public String toString() {
+        return this.serialize();
     }
 }

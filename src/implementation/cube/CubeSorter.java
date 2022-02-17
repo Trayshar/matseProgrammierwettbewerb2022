@@ -39,7 +39,7 @@ public class CubeSorter {
      * Makes a request and caches the result for later use.
      */
     public void cache(ICubeFilter filter) {
-        this.queries.put(filter,
+        this.queries.put(filter.cloneFilter(),
                 Arrays.stream(this.given)
                         .map(cube -> new QueryResult(cube, cube.match(filter).toArray(Orientation[]::new)))
                         .filter(queryResult -> queryResult.orientations.length != 0)
@@ -52,6 +52,16 @@ public class CubeSorter {
      */
     public Stream<ICube> matching(ICubeFilter filter) {
         if(!queries.containsKey(filter)) this.cache(filter);
+
+        Arrays.stream(queries.get(filter)).forEach(queryResult -> {
+            if(queryResult.cube.getNumTriangles() != filter.getNumTriangle()
+                    || Arrays.stream(queryResult.orientations)
+                    .anyMatch(orientation -> !filter.match(queryResult.cube, orientation))
+            ) {
+                throw new IllegalStateException();
+            }
+        });
+
         return Arrays.stream(queries.get(filter)).flatMap(QueryResult::stream);
     }
 }

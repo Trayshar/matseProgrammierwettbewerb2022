@@ -1,5 +1,6 @@
 package implementation.cube.filter;
 
+import abstractions.Orientation;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
@@ -38,12 +39,11 @@ public class ByteCubeFilter implements ICubeFilter {
     public boolean match(byte... triangles) {
         for (int i = 0; i < 6; i++) {
             if(this.sides[i] == AnyNotNone) {
-                if(this.sides[i] == None) return false;
+                if(triangles[i] == None) return false;
             }else if(this.sides[i] != Any) {
-                if(this.sides[i] != triangles[i]) return false;
+                if(triangles[i] != this.sides[i]) return false;
             }
         }
-
         return true;
     }
 
@@ -55,6 +55,22 @@ public class ByteCubeFilter implements ICubeFilter {
     @Override
     public Triangle getSide(ICube.Side side) {
         return Triangle.valueOf(this.sides[side.ordinal()]);
+    }
+
+    @Override
+    public int getNumTriangle() {
+        int c = 0;
+
+        for (byte side : sides) {
+            if(side != None) c++;
+        }
+
+        return c;
+    }
+
+    @Override
+    public ICubeFilter cloneFilter() {
+        return new ByteCubeFilter(this.sides);
     }
 
     @Override

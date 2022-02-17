@@ -35,6 +35,11 @@ public interface ICube extends Cloneable {
     int getIdentifier();
 
     /**
+     * Returns the number of triangles on this thing.
+     */
+    int getNumTriangles();
+
+    /**
      * Returns a {@link Stream} of all possible {@link Orientation}s this cube matches the filter in.
      * The resulting stream may be empty.
      */
