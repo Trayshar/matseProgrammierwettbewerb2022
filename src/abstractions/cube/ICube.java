@@ -58,7 +58,7 @@ public interface ICube extends Cloneable {
      * Side of a cube. Rather self-explanatory.
      */
     enum Side {
-        Up(0, 0, 1), Left(-1, 0, 0), Front(0, -1, 0), Right(1, 0, 0), Back(0, 1, 0), Down(0, 0, -1);
+        Up(0, 0, 1), Left(0, -1, 0), Front(1, 0, 0), Right(0, 1, 0), Back(-1, 0, 0), Down(0, 0, -1);
 
         public final int x, y, z;
 

@@ -111,6 +111,7 @@ public class StagedSolver implements IPuzzleSolver {
     }
 
     private void set(ICube cube) {
+        System.out.printf("[%d][%d][%d] Set %s\n", x, y, z, cube.serialize());
         this.usedIDs.add(cube.getIdentifier());
         this.solved[x][y][z] = true;
         this.solution.set(x, y, z, cube);

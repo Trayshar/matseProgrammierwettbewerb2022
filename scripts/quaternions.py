@@ -6,20 +6,24 @@ from pyquaternion import Quaternion
 greekLetters = ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta", "Iota", "Kappa", "Lambda", "Mu",
                 "Nu", "Xi", "Omicron", "Pi", "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"]
 
-# Z    Y
-# ^   /
-# |  /         The cube (side length 1) is in the center of this coordinate system
-# | /
-# |/
-# +---------------> X
+#     Z
+#     ^
+#     |
+#     |
+#     |
+#     +---------------> Y
+#    /
+#   /    The cube (side length 1) is in the center of this coordinate system
+#  /
+# X
 
-# Triangle number: 1: ◣                2: ◤                3: ◥               4: ◢                 # Face direction
-cubeTriangles = [[(-0.25, -0.25, 1),  (-0.25, 0.25, 1),   (0.25, 0.25, 1),   (0.25, -0.25, 1)],    # Up
-                 [(-1, 0.25, -0.25),  (-1, 0.25, 0.25),   (-1, -0.25, 0.25), (-1, -0.25, -0.25)],  # Left
-                 [(-0.25, -1, -0.25), (-0.25, -1, 0.25),  (0.25, -1, 0.25),  (0.25, -1, -0.25)],   # Front
-                 [(1, -0.25, -0.25),  (1, -0.25, 0.25),   (1, 0.25, 0.25),   (1, 0.25, -0.25)],    # Right
-                 [(0.25, 1, -0.25),   (0.25, 1, 0.25),    (-0.25, 1, 0.25),  (-0.25, 1, -0.25)],   # Back
-                 [(-0.25, 0.25, -1),  (-0.25, -0.25, -1), (0.25, -0.25, -1), (0.25, 0.25, -1)]]    # Down
+# Triangle number: 1: ◣                2: ◤                3: ◥               4: ◢              # Face direction
+cubeTriangles = [[(0.25, -0.25, 1), (-0.25, -0.25, 1), (-0.25, 0.25, 1), (0.25, 0.25, 1)],      # Up
+                 [(-0.25, -1, -0.25), (-0.25, -1, 0.25), (0.25, -1, 0.25), (0.25, -1, -0.25)],  # Left
+                 [(1, -0.25, -0.25), (1, -0.25, 0.25), (1, 0.25, 0.25), (1, 0.25, -0.25)],      # Front
+                 [(0.25, 1, -0.25), (0.25, 1, 0.25), (-0.25, 1, 0.25), (-0.25, 1, -0.25)],      # Right
+                 [(-1, 0.25, -0.25), (-1, 0.25, 0.25), (-1, -0.25, 0.25), (-1, -0.25, -0.25)],  # Back
+                 [(-0.25, -0.25, -1), (0.25, -0.25, -1), (0.25, 0.25, -1), (-0.25, 0.25, -1)]]  # Down
 
 
 # Gets a list of all possible rotations
@@ -52,13 +56,13 @@ def get_rotation_data(quat):
         if rotated[2] == 1:
             index = 0
         elif rotated[0] == -1:
-            index = 1
-        elif rotated[1] == -1:
-            index = 2
-        elif rotated[0] == 1:
-            index = 3
-        elif rotated[1] == 1:
             index = 4
+        elif rotated[1] == -1:
+            index = 1
+        elif rotated[0] == 1:
+            index = 2
+        elif rotated[1] == 1:
+            index = 3
         elif rotated[2] == -1:
             index = 5
         new_side_positions[i] = index

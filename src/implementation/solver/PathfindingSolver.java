@@ -13,6 +13,7 @@ import implementation.solution.DynamicPuzzleSolution;
 import java.util.ArrayDeque;
 import java.util.HashSet;
 
+@Deprecated
 public class PathfindingSolver implements IPuzzleSolver {
 
     @Override

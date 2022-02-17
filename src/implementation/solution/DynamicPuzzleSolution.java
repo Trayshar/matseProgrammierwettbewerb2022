@@ -66,6 +66,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
             }
         }
         this.cubes[op.x][op.y][op.z] = op.previous;
+        if(op.previous == null) return 0;
         return op.previous.getIdentifier();
     }
 
