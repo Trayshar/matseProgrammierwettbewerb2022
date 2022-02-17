@@ -42,7 +42,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     @Override
     public ICube set(int x, int y, int z, ICube cube) {
         if(!this.filters[x][y][z].match(cube)) {
-            System.err.printf("[%d][%d][%d] Cube %s doesnt fit %s\n", x, y, z, cube, this.filters[x][y][z]);
+            System.err.printf("[%d][%d][%d] Cube %s doesnt fit %s\n", x, y, z, cube.serialize(), this.filters[x][y][z]);
             throw new IllegalArgumentException("The given cube does not fit!");
         }
         for(ICube.Side s : ICube.Side.values()) {
