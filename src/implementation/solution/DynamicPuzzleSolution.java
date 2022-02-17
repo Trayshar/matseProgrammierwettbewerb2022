@@ -33,7 +33,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
                     if(z == dimensionZ - 1) f.setSide(ICube.Side.Up, Triangle.None);
 
                     this.filters[x][y][z] = f;
-                    System.out.printf("[%d][%d][%d] Set filter %s\n", x, y, z, f);
+                    System.out.printf("[%d][%d][%d] Set initial filter: %s\n", x, y, z, f);
                 }
             }
         }

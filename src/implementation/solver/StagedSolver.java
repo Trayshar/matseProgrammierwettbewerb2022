@@ -52,11 +52,14 @@ public class StagedSolver implements IPuzzleSolver {
 
     private void solve() throws PuzzleNotSolvableException {
         // x, y, z set here
+        System.out.println("-----");
 
-        if(this.currentQuery == null)
+        if(this.currentQuery == null) {
             this.currentQuery = this.sorter.matching(solution.getFilterAt(x, y, z))
                     .filter(this::isFree)
                     .iterator();
+            System.out.println("Current query is empty; Generating new one!");
+        }
         if(currentQuery.hasNext()) {
             this.set();
         }else { // Nothing found for this step; Stopping and tracing back;
@@ -111,7 +114,7 @@ public class StagedSolver implements IPuzzleSolver {
 
     private void set() {
         ICube cube = currentQuery.next();
-        System.out.printf("[%d][%d][%d] Set %s\n", x, y, z, cube.serialize());
+        System.out.printf("[%d][%d][%d] Set cube: %s\n", x, y, z, cube.serialize());
         this.usedIDs.add(cube.getIdentifier());
         this.solved[x][y][z] = true;
         this.solution.set(x, y, z, cube);
