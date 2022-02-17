@@ -8,9 +8,42 @@ public enum Triangle {
         return this.ordinal();
     }
 
+    public Triangle getMatching() {
+        switch (this) {
+            case None -> {
+                System.out.println("Tried to get matching of \"None\"");
+                return None;
+            }
+            case BottomLeft -> {
+                return TopLeft;
+            }
+            case TopLeft -> {
+                return BottomLeft;
+            }
+            case TopRight -> {
+                return BottomRight;
+            }
+            case BottomRight -> {
+                return TopRight;
+            }
+            case Any -> {
+                System.out.println("Tried to get matching of \"Any\"");
+                return Any;
+            }
+            case AnyNotNone -> {
+                System.out.println("Tried to get matching of \"AnyNotNone\"");
+                return AnyNotNone;
+            }
+        }
+
+        // This should not happen
+        throw new UnsupportedOperationException("Triangle " + this + " does not exist!");
+    }
+
     public Triangle getOpposite() {
         switch (this) {
             case None -> {
+                System.out.println("Tried to get opposite of \"None\"");
                 return None;
             }
             case BottomLeft -> {
@@ -26,11 +59,11 @@ public enum Triangle {
                 return TopLeft;
             }
             case Any -> {
-                // Throw exception here?
+                System.out.println("Tried to get opposite of \"Any\"");
                 return Any;
             }
             case AnyNotNone -> {
-                // Throw exception here?
+                System.out.println("Tried to get opposite of \"AnyNotNone\"");
                 return AnyNotNone;
             }
         }
