@@ -2,6 +2,7 @@ package implementation.solver;
 
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
+import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.ICubeSet;
@@ -35,7 +36,7 @@ public class StagedSolver implements IPuzzleSolver {
     }
 
     @Override
-    public IPuzzleSolution solve(int _1, int _2, int _3, ICubeSet _4) {
+    public IPuzzleSolution solve(int _1, int _2, int _3, ICubeSet _4) throws PuzzleNotSolvableException {
         ICubeFilter f = solution.getFilterAt(0, 0, 0);
         ICube seed = this.sorter.matching(f)
                 .findAny()
@@ -51,7 +52,7 @@ public class StagedSolver implements IPuzzleSolver {
         return solution;
     }
 
-    private void solve() {
+    private void solve() throws PuzzleNotSolvableException {
         // x, y, z set here
 
         if(this.currentQuery == null)
@@ -119,12 +120,12 @@ public class StagedSolver implements IPuzzleSolver {
         this.currentQuery = null;
     }
 
-    private void undo() {
+    private void undo() throws PuzzleNotSolvableException {
         Stage g = this.stages.pollLast();
         if(g == null) return;
 
         int id = this.solution.undo();
-        if(id == -1) throw new IllegalStateException();
+        if(id == -1) throw new PuzzleNotSolvableException();
         this.solved[x][y][z] = false;
         if (!this.usedIDs.remove(id)) throw new IllegalStateException();
         this.x = g.x;

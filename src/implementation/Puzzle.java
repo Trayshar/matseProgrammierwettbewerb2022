@@ -1,10 +1,12 @@
 package implementation;
 
 import abstractions.IPuzzleSolution;
+import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
 import implementation.cube.set.StaticCubeSet;
+import implementation.solution.NoSolution;
 import implementation.solver.StagedSolver;
 import mdw2021.IPuzzle;
 
@@ -43,7 +45,11 @@ public class Puzzle implements IPuzzle {
 	}
 
 	public void solve() {
-		this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(dimensionX, dimensionY, dimensionZ, null);
+		try {
+			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(dimensionX, dimensionY, dimensionZ, null);
+		} catch (PuzzleNotSolvableException e) {
+			this.solution = new NoSolution(dimensionX, dimensionY, dimensionZ);
+		}
 	}
 
 	public boolean hasSolution() {
