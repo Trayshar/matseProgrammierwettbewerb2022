@@ -127,7 +127,7 @@ public class StagedSolver implements IPuzzleSolver {
         int id = this.solution.undo();
         if(id == -1) throw new PuzzleNotSolvableException();
         this.solved[x][y][z] = false;
-        if (!this.usedIDs.remove(id)) throw new IllegalStateException("ID " + id + " wasn't used!");
+        if (id != 0 && !this.usedIDs.remove(id)) throw new IllegalStateException("ID " + id + " wasn't used!");
         this.x = g.x;
         this.y = g.y;
         this.z = g.z;
