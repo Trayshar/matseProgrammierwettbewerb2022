@@ -35,7 +35,11 @@ public class CachedCube implements ICube {
             Orientation o = Orientation.get(i);
             for (int j = 0; j < 6; j++) {
                 if(triangles[j] != Triangle.None) { // Only write if there is a triangle
-                    data[i][o.side[j]] = (byte) ((o.triangleOffset[j] + triangles[j].ordinal()) % 4);
+                    data[i][o.side[j]] = (byte) ((o.triangleOffset[j] + triangles[j].ordinal()-1 ) % 4 + 1);
+//                    if(data[i][o.side[j]] == 0) {
+//                        data[i][o.side[j]] = 1;
+//                        System.out.printf("[%s] Illegal rotation operation (%d, %d)\n", this.identifier, o.triangleOffset[j], triangles[j].ordinal());
+//                    }
                 }
             }
         }
