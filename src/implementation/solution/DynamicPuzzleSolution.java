@@ -63,7 +63,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         if (op == null) return -1;
         for (ICube.Side s : ICube.Side.values()) {
             int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
-            if (validX(x2) && validY(y2) && validZ(z2)) {
+            if (validX(x2) && validY(y2) && validZ(z2) && this.filters[x2][y2][z2].getSide(s) != Triangle.None) {
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
                 System.out.printf("[%d][%d][%d] [Undo] Set filter %s\n", x2, y2, z2, this.filters[x2][y2][z2]);
             }
