@@ -8,62 +8,30 @@ public enum Triangle {
         return this.ordinal();
     }
 
-    public Triangle getMatching() {
+    public Triangle getMatching(boolean isVertical) {
         switch (this) {
             case None -> {
-                System.out.println("Tried to get matching of \"None\"");
+                System.err.println("Tried to get matching of \"None\"");
                 return None;
             }
             case BottomLeft -> {
-                return TopLeft;
+                return isVertical ? BottomRight : TopLeft;
             }
             case TopLeft -> {
-                return BottomLeft;
+                return isVertical ? TopRight : BottomLeft;
             }
             case TopRight -> {
-                return BottomRight;
+                return isVertical ? TopLeft : BottomRight;
             }
             case BottomRight -> {
-                return TopRight;
+                return isVertical ? BottomLeft : TopRight;
             }
             case Any -> {
-                System.out.println("Tried to get matching of \"Any\"");
+                System.err.println("Tried to get matching of \"Any\"");
                 return Any;
             }
             case AnyNotNone -> {
-                System.out.println("Tried to get matching of \"AnyNotNone\"");
-                return AnyNotNone;
-            }
-        }
-
-        // This should not happen
-        throw new UnsupportedOperationException("Triangle " + this + " does not exist!");
-    }
-
-    public Triangle getOpposite() {
-        switch (this) {
-            case None -> {
-                System.out.println("Tried to get opposite of \"None\"");
-                return None;
-            }
-            case BottomLeft -> {
-                return TopRight;
-            }
-            case TopLeft -> {
-                return BottomRight;
-            }
-            case TopRight -> {
-                return BottomLeft;
-            }
-            case BottomRight -> {
-                return TopLeft;
-            }
-            case Any -> {
-                System.out.println("Tried to get opposite of \"Any\"");
-                return Any;
-            }
-            case AnyNotNone -> {
-                System.out.println("Tried to get opposite of \"AnyNotNone\"");
+                System.err.println("Tried to get matching of \"AnyNotNone\"");
                 return AnyNotNone;
             }
         }

@@ -51,7 +51,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
             int x2 = x + s.x, y2 = y + s.y, z2 = z + s.z;
             if(validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
                 var t = this.filters[x2][y2][z2].cloneFilter();
-                this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getMatching());
+                this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getMatching(s.z != 0));
                 //System.out.printf("[%d][%d][%d] Set filter %s, previous %s\n", x2, y2, z2, this.filters[x2][y2][z2], t);
             }
         }
