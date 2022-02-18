@@ -60,15 +60,15 @@ public class StagedSolver implements IPuzzleSolver {
 
     private void solve() throws PuzzleNotSolvableException {
         // x, y, z set here
-        System.out.printf("(Stage %d) Running for coords %d %d %d\n", this.stages.size(), x, y, z);
+        //System.out.printf("(Stage %d) Running for coords %d %d %d\n", this.stages.size(), x, y, z);
 
         if(this.currentQuery == null) {
             this.currentQuery = new CubeIterator(this.sorter.matching(solution.getFilterAt(x, y, z))
                     .filter(this::isFree)
                     .toArray(ICube[]::new));
-            System.out.println("Current query is empty; Generating new one!");
+            //System.out.println("Current query is empty; Generating new one!");
         }
-        System.out.printf("Current query: %d/ %d elements\n", currentQuery.index + 1, currentQuery.length());
+        //System.out.printf("Current query: %d/ %d elements\n", currentQuery.index + 1, currentQuery.length());
         if(currentQuery.hasNext()) {
             this.set();
         }else { // Nothing found for this step; Stopping and tracing back;
@@ -76,7 +76,7 @@ public class StagedSolver implements IPuzzleSolver {
             this.solve();
         }
 
-        System.out.println("-----------------------");
+        //System.out.println("-----------------------");
     }
 
     /**
@@ -125,7 +125,7 @@ public class StagedSolver implements IPuzzleSolver {
 
     private void set() {
         ICube cube = currentQuery.next();
-        System.out.printf("[%d][%d][%d] Set cube: %s\n", x, y, z, cube.serialize());
+        //System.out.printf("[%d][%d][%d] Set cube: %s\n", x, y, z, cube.serialize());
         this.usedIDs.add(cube.getIdentifier());
         this.solution.set(x, y, z, cube);
         this.stages.addLast(new Stage(x, y, z, currentQuery));
