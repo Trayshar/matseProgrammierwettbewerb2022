@@ -74,9 +74,10 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
                 System.out.printf("[%d][%d][%d] [Undo] Set filter %s , previous %s\n", x2, y2, z2, this.filters[x2][y2][z2], t);
             }
         }
+        int id = 0;
+        if(this.cubes[op.x][op.y][op.z] != null) id = this.cubes[op.x][op.y][op.z].getIdentifier();
         this.cubes[op.x][op.y][op.z] = op.previous;
-        if(op.previous == null) return 0;
-        return op.previous.getIdentifier();
+        return id;
     }
 
     private boolean validX(int val) {

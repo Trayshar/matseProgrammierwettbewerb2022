@@ -5,13 +5,11 @@ import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
-import abstractions.cube.ICubeFilter;
 import abstractions.cube.ICubeSet;
 import implementation.cube.CubeSorter;
 import implementation.solution.DynamicPuzzleSolution;
 
 import java.util.*;
-import java.util.stream.Stream;
 
 public class StagedSolver implements IPuzzleSolver {
     /** Immutable */
@@ -21,7 +19,6 @@ public class StagedSolver implements IPuzzleSolver {
     private final DynamicPuzzleSolution solution;
     private final HashSet<Integer> usedIDs = new HashSet<>();
     private final CubeSorter sorter;
-    private final boolean[][][] solved;
     private int x, y, z;
     private CubeIterator currentQuery;
     private final ArrayDeque<Stage> stages = new ArrayDeque<>();
@@ -32,7 +29,6 @@ public class StagedSolver implements IPuzzleSolver {
         this.dimensionZ = dimensionZ;
         this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
         this.sorter = new CubeSorter(cubes);
-        this.solved = new boolean[dimensionX][dimensionY][dimensionZ];
     }
 
     @Override
@@ -106,7 +102,7 @@ public class StagedSolver implements IPuzzleSolver {
     }
 
     private boolean setAndReturnCoords(int x, int y, int z) {
-        if(validX(x) && validY(y) && validZ(z) && !solved[x][y][z]) {
+        if(validX(x) && validY(y) && validZ(z) && this.solution.getSolutionAt(x, y, z) == null) {
             this.x = x;
             this.y = y;
             this.z = z;
@@ -131,7 +127,6 @@ public class StagedSolver implements IPuzzleSolver {
         ICube cube = currentQuery.next();
         System.out.printf("[%d][%d][%d] Set cube: %s\n", x, y, z, cube.serialize());
         this.usedIDs.add(cube.getIdentifier());
-        this.solved[x][y][z] = true;
         this.solution.set(x, y, z, cube);
         this.stages.addLast(new Stage(x, y, z, currentQuery));
         this.currentQuery = null;
@@ -143,8 +138,7 @@ public class StagedSolver implements IPuzzleSolver {
 
         int id = this.solution.undo();
         if(id == -1) throw new PuzzleNotSolvableException();
-        this.solved[x][y][z] = false;
-        if (id != 0 && !this.usedIDs.remove(id)) throw new IllegalStateException("ID " + id + " wasn't used!");
+        if (id > 0 && !this.usedIDs.remove(id)) throw new IllegalStateException("ID " + id + " wasn't used!");
         this.x = g.x;
         this.y = g.y;
         this.z = g.z;
