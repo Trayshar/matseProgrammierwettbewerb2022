@@ -5,7 +5,6 @@ import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
-import implementation.cube.set.StaticCubeSet;
 import implementation.solution.NoSolution;
 import implementation.solver.StagedSolver;
 import mdw2021.IPuzzle;
@@ -16,6 +15,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class Puzzle implements IPuzzle {
+	/** flag to control if this is run in debug mode. */
+	public static final boolean DEBUG = false;
 
 	private int dimensionX, dimensionY, dimensionZ;
 	private ICube[] cubes;
@@ -46,7 +47,7 @@ public class Puzzle implements IPuzzle {
 
 	public void solve() {
 		try {
-			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(dimensionX, dimensionY, dimensionZ, null);
+			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(0, 0, 0, null);
 		} catch (PuzzleNotSolvableException e) {
 			e.printStackTrace();
 			this.solution = new NoSolution(dimensionX, dimensionY, dimensionZ);

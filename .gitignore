@@ -3,3 +3,4 @@
 /result_files/
 /out/
 *.iml
+.attach_pid*

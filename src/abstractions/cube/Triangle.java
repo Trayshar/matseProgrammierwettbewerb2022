@@ -1,43 +1,21 @@
 package abstractions.cube;
 
 public enum Triangle {
-    None, BottomLeft, TopLeft, TopRight, BottomRight, Any, AnyNotNone;
+    None, BottomLeft, TopLeft, TopRight, BottomRight, @Deprecated Any, AnyNotNone;
 
     public int serialize() {
         if(this == Any || this == AnyNotNone) throw new UnsupportedOperationException("Cannot serialize filter value \"" + this + "\"!");
         return this.ordinal();
     }
 
-    public Triangle getMatching(boolean isVertical) {
-        switch (this) {
-            case None -> {
-                System.err.println("Tried to get matching of \"None\"");
-                return None;
-            }
-            case BottomLeft -> {
-                return isVertical ? BottomRight : TopLeft;
-            }
-            case TopLeft -> {
-                return isVertical ? TopRight : BottomLeft;
-            }
-            case TopRight -> {
-                return isVertical ? TopLeft : BottomRight;
-            }
-            case BottomRight -> {
-                return isVertical ? BottomLeft : TopRight;
-            }
-            case Any -> {
-                System.err.println("Tried to get matching of \"Any\"");
-                return Any;
-            }
-            case AnyNotNone -> {
-                System.err.println("Tried to get matching of \"AnyNotNone\"");
-                return AnyNotNone;
-            }
-        }
+    private static final Triangle[] matchingHorizontal = {None, TopLeft, BottomLeft, BottomRight, TopRight, Any, AnyNotNone};
+    private static final Triangle[] matchingVertical   = {None, BottomRight, TopRight, TopLeft, BottomLeft, Any, AnyNotNone};
 
-        // This should not happen
-        throw new UnsupportedOperationException("Triangle " + this + " does not exist!");
+    public Triangle getMatching(boolean isVertical) {
+        if(isVertical) {
+            return matchingVertical[this.ordinal()];
+        }
+        return matchingHorizontal[this.ordinal()];
     }
 
     /**
