@@ -64,4 +64,8 @@ public class CubeSorter {
 
         return Arrays.stream(queries.get(filter)).flatMap(QueryResult::stream);
     }
+
+    public int getSize() {
+        return this.queries.size();
+    }
 }

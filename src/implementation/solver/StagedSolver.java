@@ -22,6 +22,7 @@ public class StagedSolver implements IPuzzleSolver {
     private int x, y, z;
     private CubeIterator currentQuery;
     private final ArrayDeque<Stage> stages = new ArrayDeque<>();
+    private long iter = 0L;
 
     public StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
         this.dimensionX = dimensionX;
@@ -41,19 +42,22 @@ public class StagedSolver implements IPuzzleSolver {
                 .map(obj -> (Coordinate) obj[0])
                 .orElseThrow();
 
-        System.out.println("Staring at " + seed + "!");
-
         this.x = seed.x();
         this.y = seed.y();
         this.z = seed.z();
-
         this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z)).toArray(ICube[]::new));
+
+        System.out.printf("Staring at %s with %d possibilities!\n", seed, currentQuery.length());
         if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
         this.set();
 
         while(setNextCoords()) {
             solve();
         }
+
+        System.out.println("Done! Stats:");
+        System.out.printf("%d queries cached\n", this.sorter.getSize());
+        System.out.printf("Seed stage finished with %d iterations\n", iter);
 
         return solution;
     }
@@ -76,6 +80,7 @@ public class StagedSolver implements IPuzzleSolver {
             this.solve();
         }
 
+        iter++;
         //System.out.println("-----------------------");
     }
 
