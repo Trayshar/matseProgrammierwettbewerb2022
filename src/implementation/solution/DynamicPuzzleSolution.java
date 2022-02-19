@@ -4,15 +4,16 @@ import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
+import implementation.Puzzle;
 import implementation.cube.filter.CubeFilterFactory;
 
-import java.util.ArrayDeque;
+import java.util.LinkedList;
 
 public class DynamicPuzzleSolution implements IPuzzleSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     private final ICube[][][] cubes;
     private final ICubeFilter[][][] filters;
-    private final ArrayDeque<SetOperation> operations = new ArrayDeque<>();
+    private final LinkedList<SetOperation> operations = new LinkedList<>();
 
     private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
 
@@ -43,14 +44,14 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
 
     @Override
     public ICube set(int x, int y, int z, ICube cube) {
-        if(!this.filters[x][y][z].match(cube)) {
+        if(Puzzle.DEBUG && !this.filters[x][y][z].match(cube)) {
             System.err.printf("[%d][%d][%d] Cube %s doesnt fit %s\n", x, y, z, cube.serialize(), this.filters[x][y][z]);
             throw new IllegalArgumentException("The given cube does not fit!");
         }
         for(ICube.Side s : ICube.Side.values()) {
             int x2 = x + s.x, y2 = y + s.y, z2 = z + s.z;
             if(validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
-                var t = this.filters[x2][y2][z2].cloneFilter();
+                //var t = this.filters[x2][y2][z2].cloneFilter();
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getMatching(s.z != 0));
                 //System.out.printf("[%d][%d][%d] Set filter %s, previous %s\n", x2, y2, z2, this.filters[x2][y2][z2], t);
             }
@@ -69,7 +70,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         for (ICube.Side s : ICube.Side.values()) {
             int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
             if (validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
-                var t = this.filters[x2][y2][z2].cloneFilter();
+                //var t = this.filters[x2][y2][z2].cloneFilter();
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
                 //System.out.printf("[%d][%d][%d] [Undo] Set filter %s , previous %s\n", x2, y2, z2, this.filters[x2][y2][z2], t);
             }

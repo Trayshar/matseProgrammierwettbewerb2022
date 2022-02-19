@@ -7,33 +7,20 @@ public interface ICubeFilter extends Cloneable {
      * Checks if the given cube matches this filter in its current orientation
      */
     default boolean match(ICube cube){
-        return this.match(
-                cube.getTriangle(ICube.Side.Up),
-                cube.getTriangle(ICube.Side.Left),
-                cube.getTriangle(ICube.Side.Front),
-                cube.getTriangle(ICube.Side.Right),
-                cube.getTriangle(ICube.Side.Back),
-                cube.getTriangle(ICube.Side.Down)
-        );
+        return this.match(cube.getTriangles());
     }
 
     /**
      * Checks if the given cube matches this filter in the given orientation
      */
     default boolean match(ICube cube, Orientation o) {
-        return this.match(
-                cube.getTriangle(ICube.Side.Up, o),
-                cube.getTriangle(ICube.Side.Left, o),
-                cube.getTriangle(ICube.Side.Front, o),
-                cube.getTriangle(ICube.Side.Right, o),
-                cube.getTriangle(ICube.Side.Back, o),
-                cube.getTriangle(ICube.Side.Down, o)
-        );
+        return this.match(cube.getTriangles(o));
     }
 
     /**
      * Checks if the given cube matches this filter
      */
+    @Deprecated
     default boolean match(Triangle... cube){
         return this.match(
                 (byte) cube[0].ordinal(),

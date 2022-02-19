@@ -45,6 +45,10 @@ public interface ICube extends Cloneable {
      */
     Stream<Orientation> match(ICubeFilter filter);
 
+    byte[] getTriangles();
+
+    byte[] getTriangles(Orientation o);
+
     /**
      * Serializes the cube with its current orientation.
      */
@@ -73,28 +77,10 @@ public interface ICube extends Cloneable {
             this.z = z;
         }
 
+        private static final Side[] opposite = {Down, Right, Back, Left, Front, Up};
+
         public Side getOpposite() {
-            switch(this) {
-                case Up -> {
-                    return Side.Down;
-                }
-                case Left -> {
-                    return Side.Right;
-                }
-                case Front -> {
-                    return Side.Back;
-                }
-                case Right -> {
-                    return Side.Left;
-                }
-                case Back -> {
-                    return Side.Front;
-                }
-                case Down -> {
-                    return Side.Up;
-                }
-            }
-            throw new IllegalStateException("Unknown side \"" + this + "\"!");
+            return opposite[this.ordinal()];
         }
     }
 }

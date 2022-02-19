@@ -3,9 +3,11 @@ package implementation.cube;
 import abstractions.Orientation;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
+import implementation.Puzzle;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 /**
@@ -47,22 +49,31 @@ public class CubeSorter {
         );
     }
 
-    /**
-     * Retrieves the result of a query. The resulting stream might be empty.
-     */
-    public Stream<ICube> matching(ICubeFilter filter) {
+    private void prepareMatching(ICubeFilter filter) {
         if(!queries.containsKey(filter)) this.cache(filter);
 
-        Arrays.stream(queries.get(filter)).forEach(queryResult -> {
-            if(queryResult.cube.getNumTriangles() != filter.getNumTriangle()
-                    || Arrays.stream(queryResult.orientations)
-                    .anyMatch(orientation -> !filter.match(queryResult.cube, orientation))
-            ) {
-                throw new IllegalStateException();
-            }
-        });
+        if(Puzzle.DEBUG) {
+            Arrays.stream(queries.get(filter)).forEach(queryResult -> {
+                if (queryResult.cube.getNumTriangles() != filter.getNumTriangle()
+                        || Arrays.stream(queryResult.orientations)
+                        .anyMatch(orientation -> !filter.match(queryResult.cube, orientation))
+                ) {
+                    throw new IllegalStateException();
+                }
+            });
+        }
+    }
 
-        return Arrays.stream(queries.get(filter)).flatMap(QueryResult::stream);
+    /**
+     * Retrieves all cubes that match the given filter and who's ID satisfies the predicate.
+     * The resulting array might be empty.
+     */
+    public ICube[] matching(ICubeFilter matcher, Predicate<Integer> filter) {
+        prepareMatching(matcher);
+        return Arrays.stream(queries.get(matcher))
+                .filter(queryResult -> filter.test(queryResult.cube.getIdentifier()))
+                .flatMap(QueryResult::stream)
+                .toArray(ICube[]::new);
     }
 
     public int getSize() {

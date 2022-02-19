@@ -6,6 +6,7 @@ import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeSet;
+import implementation.Puzzle;
 import implementation.cube.CubeSorter;
 import implementation.solution.DynamicPuzzleSolution;
 
@@ -17,11 +18,11 @@ public class StagedSolver implements IPuzzleSolver {
 
     /* Mutable */
     private final DynamicPuzzleSolution solution;
-    private final HashSet<Integer> usedIDs = new HashSet<>();
+    private final boolean[] usedIDs;
     private final CubeSorter sorter;
     private int x, y, z;
     private CubeIterator currentQuery;
-    private final ArrayDeque<Stage> stages = new ArrayDeque<>();
+    private final LinkedList<Stage> stages = new LinkedList<>();
     private long iter = 0L;
 
     public StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
@@ -30,6 +31,7 @@ public class StagedSolver implements IPuzzleSolver {
         this.dimensionZ = dimensionZ;
         this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
         this.sorter = new CubeSorter(cubes);
+        this.usedIDs = new boolean[cubes.length + 1];
     }
 
     @Override
@@ -37,15 +39,15 @@ public class StagedSolver implements IPuzzleSolver {
 
         // I'm losing my sanity as I write this
         Coordinate seed = Coordinate.generate(dimensionX, dimensionY, dimensionZ)
-                .map(c -> new Object[]{c, this.sorter.matching(solution.getFilterAt(c.x(), c.y(), c.z())).count()} )
-                .min(Comparator.comparingLong(o -> (Long) o[1]))
+                .map(c -> new Object[]{c, this.sorter.matching(solution.getFilterAt(c.x(), c.y(), c.z()), i -> true).length} )
+                .min(Comparator.comparingInt(o -> (Integer) o[1]))
                 .map(obj -> (Coordinate) obj[0])
                 .orElseThrow();
 
         this.x = seed.x();
         this.y = seed.y();
         this.z = seed.z();
-        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z)).toArray(ICube[]::new));
+        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z), i -> true));
 
         System.out.printf("Staring at %s with %d possibilities!\n", seed, currentQuery.length());
         if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
@@ -57,7 +59,7 @@ public class StagedSolver implements IPuzzleSolver {
 
         System.out.println("Done! Stats:");
         System.out.printf("%d queries cached\n", this.sorter.getSize());
-        System.out.printf("Seed stage finished with %d iterations\n", iter);
+        System.out.printf("Solver finished after %d iterations\n", iter);
 
         return solution;
     }
@@ -67,9 +69,8 @@ public class StagedSolver implements IPuzzleSolver {
         //System.out.printf("(Stage %d) Running for coords %d %d %d\n", this.stages.size(), x, y, z);
 
         if(this.currentQuery == null) {
-            this.currentQuery = new CubeIterator(this.sorter.matching(solution.getFilterAt(x, y, z))
-                    .filter(this::isFree)
-                    .toArray(ICube[]::new));
+            this.currentQuery = new CubeIterator(
+                    this.sorter.matching(solution.getFilterAt(x, y, z), this::isFree));
             //System.out.println("Current query is empty; Generating new one!");
         }
         //System.out.printf("Current query: %d/ %d elements\n", currentQuery.index + 1, currentQuery.length());
@@ -131,7 +132,7 @@ public class StagedSolver implements IPuzzleSolver {
     private void set() {
         ICube cube = currentQuery.next();
         //System.out.printf("[%d][%d][%d] Set cube: %s\n", x, y, z, cube.serialize());
-        this.usedIDs.add(cube.getIdentifier());
+        this.usedIDs[cube.getIdentifier()] = true;
         this.solution.set(x, y, z, cube);
         this.stages.addLast(new Stage(x, y, z, currentQuery));
         this.currentQuery = null;
@@ -143,15 +144,19 @@ public class StagedSolver implements IPuzzleSolver {
 
         int id = this.solution.undo();
         if(id == -1) throw new PuzzleNotSolvableException();
-        if (id > 0 && !this.usedIDs.remove(id)) throw new IllegalStateException("ID " + id + " wasn't used!");
+        if (id > 0) {
+            if(Puzzle.DEBUG && !this.usedIDs[id]) throw new IllegalStateException("Trying to free ID " + id + " which wasn't used!");
+            this.usedIDs[id] = false;
+        }
+
         this.x = g.x;
         this.y = g.y;
         this.z = g.z;
         this.currentQuery = g.results;
     }
 
-    private boolean isFree(ICube cube) {
-        return !usedIDs.contains(cube.getIdentifier());
+    private boolean isFree(Integer cube) {
+        return !this.usedIDs[cube];
     }
 
     private record Stage(int x, int y, int z, CubeIterator results) {}

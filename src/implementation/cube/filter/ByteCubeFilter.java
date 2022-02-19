@@ -18,6 +18,7 @@ public class ByteCubeFilter implements ICubeFilter {
     private static final byte TopLeft = (byte) Triangle.TopLeft.ordinal();
     private static final byte TopRight = (byte) Triangle.TopRight.ordinal();
     private static final byte BottomRight = (byte) Triangle.BottomRight.ordinal();
+    @Deprecated
     private static final byte Any = (byte) Triangle.Any.ordinal();
     private static final byte AnyNotNone = (byte) Triangle.AnyNotNone.ordinal();
 
@@ -29,8 +30,6 @@ public class ByteCubeFilter implements ICubeFilter {
         }
     }
 
-    public ByteCubeFilter() {}
-
     public ByteCubeFilter(byte... sides) {
         System.arraycopy(sides, 0, this.sides, 0, 6);
     }
@@ -40,7 +39,7 @@ public class ByteCubeFilter implements ICubeFilter {
         for (int i = 0; i < 6; i++) {
             if(this.sides[i] == AnyNotNone) {
                 if(triangles[i] == None) return false;
-            }else if(this.sides[i] != Any) {
+            }else {
                 if(triangles[i] != this.sides[i]) return false;
             }
         }

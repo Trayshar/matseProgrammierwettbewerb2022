@@ -4,6 +4,7 @@ import abstractions.Orientation;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
+import implementation.Puzzle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,10 +39,10 @@ public class CachedCube implements ICube {
                     byte tmp  = (byte) (o.triangleOffset[j] + triangles[j].ordinal());
                     if (tmp > 4) tmp -= 4;
                     data[i][o.side[j]] = tmp;
-//                    if(data[i][o.side[j]] == 0) {
-//                        data[i][o.side[j]] = 1;
-//                        System.out.printf("[%s] Illegal rotation operation (%d, %d)\n", this.identifier, o.triangleOffset[j], triangles[j].ordinal());
-//                    }
+                    if(Puzzle.DEBUG && data[i][o.side[j]] == 0) {
+                        data[i][o.side[j]] = 1;
+                        System.out.printf("[%s] Illegal rotation operation (%d, %d)\n", this.identifier, o.triangleOffset[j], triangles[j].ordinal());
+                    }
                 }
             }
         }
@@ -105,6 +106,16 @@ public class CachedCube implements ICube {
             }
         }
         return list.stream();
+    }
+
+    @Override
+    public byte[] getTriangles() {
+        return this.data[this.orientation.ordinal()];
+    }
+
+    @Override
+    public byte[] getTriangles(Orientation o) {
+        return this.data[o.ordinal()];
     }
 
     @Override
