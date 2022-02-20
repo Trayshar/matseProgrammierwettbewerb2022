@@ -2,6 +2,7 @@ package abstractions.cube;
 
 import abstractions.Orientation;
 
+import java.util.ArrayList;
 import java.util.stream.Stream;
 
 /**
@@ -43,7 +44,7 @@ public interface ICube extends Cloneable {
      * Returns a {@link Stream} of all possible {@link Orientation}s this cube matches the filter in.
      * The resulting stream may be empty.
      */
-    Stream<Orientation> match(ICubeFilter filter);
+    ArrayList<Orientation> match(ICubeFilter filter);
 
     byte[] getTriangles();
 
