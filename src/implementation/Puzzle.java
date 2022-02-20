@@ -5,7 +5,6 @@ import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
-import implementation.solution.NoSolution;
 import implementation.solver.StagedSolver;
 import mdw2021.IPuzzle;
 
@@ -24,8 +23,7 @@ public class Puzzle implements IPuzzle {
 
 	public void readInput(String filename) {
 		ArrayList<ICube> cubes = new ArrayList<>();
-		try {
-			BufferedReader reader = new BufferedReader(new FileReader(filename));
+		try (BufferedReader reader = new BufferedReader(new FileReader(filename))) {
 			reader.lines().filter(s -> !s.startsWith("//")).forEachOrdered(s -> {
 				if(s.startsWith("Dimension")) {
 					var tmp = s.substring(10).split(",");
@@ -37,7 +35,7 @@ public class Puzzle implements IPuzzle {
 					cubes.add(readFromRaw(s));
 				}
 			});
-		} catch (FileNotFoundException e) {
+		} catch (IOException e) {
 			e.printStackTrace();
 			return;
 		}
@@ -50,7 +48,7 @@ public class Puzzle implements IPuzzle {
 			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(0, 0, 0, null);
 		} catch (PuzzleNotSolvableException e) {
 			e.printStackTrace();
-			this.solution = new NoSolution(dimensionX, dimensionY, dimensionZ);
+			this.solution = null;
 		}
 	}
 

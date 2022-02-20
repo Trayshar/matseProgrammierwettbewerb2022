@@ -8,7 +8,6 @@ import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
 import implementation.cube.filter.CubeFilterFactory;
-import implementation.solution.NoSolution;
 import implementation.solver.StagedSolver;
 
 import java.io.File;
@@ -192,7 +191,7 @@ public class Generator {
             System.out.println("--- Solver finished ---");
             System.out.printf("Took %f seconds.\n", time);
             System.out.println("-----------------------");
-            if(solution instanceof NoSolution) throw new PuzzleNotSolvableException();
+            if(solution == null) throw new PuzzleNotSolvableException();
 
             File f = new File("result_files/selfcheck.out.txt");
             f.createNewFile();
@@ -204,14 +203,14 @@ public class Generator {
             if(Pattern.compile(".*Puzzle enthält \\d+ Fehler!.*").matcher(result).find()) {
                 System.err.println("Failed to solve puzzle!");
                 System.err.print(result);
-                System.exit(1);
+                return 0d;
             }
 
             result = executeExternalJar("library/validator.jar", new String[]{"result_files/selfcheck.in.txt", "result_files/selfcheck.out.txt"});
             if(Pattern.compile(".* insgesamt \\d+ Fehler auf!.*").matcher(result).find()) {
                 System.err.println("Failed to solve puzzle!");
                 System.err.print(result);
-                System.exit(1);
+                return 0d;
             }
 
             return time;
