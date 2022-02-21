@@ -160,7 +160,7 @@ public enum CubeType {
                 // | 2c | 3c | ... | 3c | 2c |
                 // + -- + -- + ... + -- + -- +
                 check(sorter, TwoConnected, 4);
-                check(sorter, ThreeConnected, dimX - 4);
+                check(sorter, ThreeConnected, 2*dimX - 4);
             } else { // x, y ≥ 3, z = 1
                 // + -- + -- + ... + -- + -- +
                 // | 2c | 3c | ... | 3c | 2c |
