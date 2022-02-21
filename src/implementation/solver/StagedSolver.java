@@ -4,6 +4,7 @@ import abstractions.Coordinate;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
+import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeSet;
 import implementation.Puzzle;
@@ -20,7 +21,7 @@ public class StagedSolver implements IPuzzleSolver {
     private final DynamicPuzzleSolution solution;
     private final boolean[] usedIDs;
     private final CubeSorter sorter;
-    private int x, y, z;
+    private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
     private final LinkedList<Stage> stages = new LinkedList<>();
     private long iter = 0L;
@@ -36,20 +37,11 @@ public class StagedSolver implements IPuzzleSolver {
 
     @Override
     public IPuzzleSolution solve(int _1, int _2, int _3, ICubeSet _4) throws PuzzleNotSolvableException {
+        CubeType.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
 
-        // I'm losing my sanity as I write this
-        Coordinate seed = Coordinate.generate(dimensionX, dimensionY, dimensionZ)
-                .map(c -> new Object[]{c, this.sorter.matching(solution.getFilterAt(c.x(), c.y(), c.z()), i -> true).length} )
-                .min(Comparator.comparingInt(o -> (Integer) o[1]))
-                .map(obj -> (Coordinate) obj[0])
-                .orElseThrow();
-
-        this.x = seed.x();
-        this.y = seed.y();
-        this.z = seed.z();
         this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z), i -> true));
 
-        System.out.printf("Staring at %s with %d possibilities!\n", seed, currentQuery.length());
+        System.out.printf("Staring at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
         if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
         this.set();
 
@@ -86,34 +78,23 @@ public class StagedSolver implements IPuzzleSolver {
     }
 
     /**
-     * I HATE THIS
+     * Goes in x direction till the end, then y, then z.
      */
     private boolean setNextCoords() {
-        for (int dx = 0; dx < dimensionX; dx++) {
-            for (int dy = 0; dy < dimensionY; dy++) {
-                for (int dz = 0; dz < dimensionZ; dz++) {
-                    if(setAndReturnCoords(x + dx, y + dy, z + dz)) return true;
-                    if(setAndReturnCoords(x - dx, y + dy, z + dz)) return true;
-                    if(setAndReturnCoords(x + dx, y - dy, z + dz)) return true;
-                    if(setAndReturnCoords(x - dx, y - dy, z + dz)) return true;
-                    if(setAndReturnCoords(x + dx, y + dy, z - dz)) return true;
-                    if(setAndReturnCoords(x - dx, y + dy, z - dz)) return true;
-                    if(setAndReturnCoords(x + dx, y - dy, z - dz)) return true;
-                    if(setAndReturnCoords(x - dx, y - dy, z - dz)) return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    private boolean setAndReturnCoords(int x, int y, int z) {
-        if(validX(x) && validY(y) && validZ(z) && this.solution.getSolutionAt(x, y, z) == null) {
-            this.x = x;
-            this.y = y;
-            this.z = z;
+        if(validX(x + 1) && this.solution.getSolutionAt(x + 1, y, z) == null) {
+            this.x++;
+            return true;
+        }else if(validY(y + 1) && this.solution.getSolutionAt(0, y + 1, z) == null) {
+            this.x = 0;
+            this.y++;
+            return true;
+        }else if(validZ(z + 1) && this.solution.getSolutionAt(0, 0, z + 1) == null) {
+            this.x = 0;
+            this.y = 0;
+            this.z++;
             return true;
         }
+
         return false;
     }
 

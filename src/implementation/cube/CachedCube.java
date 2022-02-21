@@ -8,7 +8,6 @@ import implementation.Puzzle;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.stream.Stream;
 
 /**
  * Cube implementation that caches all possible rotations.
@@ -98,14 +97,14 @@ public class CachedCube implements ICube {
     }
 
     @Override
-    public Stream<Orientation> match(ICubeFilter filter) {
+    public ArrayList<Orientation> match(ICubeFilter filter) {
         ArrayList<Orientation> list = new ArrayList<>(24);
         for (int i = 0; i < 24; i++) {
             if(filter.match(this.data[i])) {
                 list.add(Orientation.get(i));
             }
         }
-        return list.stream();
+        return list;
     }
 
     @Override

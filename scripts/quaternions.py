@@ -41,9 +41,9 @@ def rotations():
 
 
 # Returns where the given rotation puts the sides of our cube and how the triangle on each side gets affected.
-# The idea is to rotate the default triangle for the given rotation on all 6 sides
+# The idea is to rotate the first triangle for the given rotation on all 6 sides
 # and then look where the triangle is pointing to calculate the offset.
-# Also, we're gonna hardcode that instead of messing with quaternions in java ourselves. Also saves performance
+# Also, we're gonna hardcode that instead of messing with quaternions in java ourselves.
 def get_rotation_data(quat):
     new_side_positions = [None] * 6
     new_triangle_offset = [None] * 6
@@ -79,7 +79,7 @@ def round_vec(vec):
 if __name__ == '__main__':
     all_rotations = list(rotations())  # Indexed list of rotations
     rotation_data = list()  # Holds the data we care about, indexed by the above
-    rotation_multiplication = [[-1] * 24 for _ in range(24)]  # Hold how two given rotations multiply
+    rotation_multiplication = [[-1] * 24 for _ in range(24)]  # Holds how two given rotations multiply
 
     print("Raw data: ")
     letterIndex = 0
@@ -109,7 +109,7 @@ if __name__ == '__main__':
 
     print("Enum multiplication, From \ To: ")
     for rot in rotation_multiplication:
-        print(str(rot)[1:-1] + ",")
+        print("[" + ", ".join(map(str, rot)) + "]")
 
 # Other sources:
 # https://math.stackexchange.com/questions/4379507/how-to-get-all-possible-rotations-of-the-cube-represented-by-matrix-with-data
