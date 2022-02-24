@@ -7,11 +7,13 @@ import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
 import implementation.solver.StagedSolver;
 import mdw2021.IPuzzle;
+import tooling.Observer;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Timer;
 
 public class Puzzle implements IPuzzle {
 	/** flag to control if this is run in debug mode. */
@@ -45,7 +47,14 @@ public class Puzzle implements IPuzzle {
 
 	public void solve() {
 		try {
-			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(0, 0, 0, null);
+			StagedSolver s = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes);
+
+			Timer timer = new Timer(true);
+			if(DEBUG) {
+				timer.scheduleAtFixedRate(new Observer(s), 1000, 1000);
+			}
+			this.solution = s.solve(0, 0, 0, null);
+			timer.cancel();
 		} catch (PuzzleNotSolvableException e) {
 			e.printStackTrace();
 			this.solution = null;

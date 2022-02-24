@@ -21,6 +21,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import java.util.Timer;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -184,8 +185,13 @@ public class Generator {
         try{
             printMemoryStats();
             System.out.println("--- Starting solver ---");
+
+            StagedSolver s = new StagedSolver(dimX, dimY, dimZ, cubes);
+            Timer timer = new Timer(true);
+            timer.scheduleAtFixedRate(new Observer(s), 1000, 1000);
             long var3 = System.currentTimeMillis();
-            IPuzzleSolution solution = new StagedSolver(dimX, dimY, dimZ, cubes).solve(0, 0, 0, null);
+            IPuzzleSolution solution = s.solve(0, 0, 0, null);
+            timer.cancel();
             long var5 = System.currentTimeMillis();
             double time = (double)(var5 - var3) / 1000.0D;
             System.out.println("--- Solver finished ---");

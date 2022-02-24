@@ -203,5 +203,6 @@ public enum CubeType {
     private static void check(CubeSorter sorter, CubeType type, int expected) throws PuzzleNotSolvableException {
         int i = sorter.unique(type);
         if(i != expected) throw new PuzzleNotSolvableException("Type " + type + " required " + expected + " cubes, but " + i + " were found!");
+        System.out.println("Type " + type + " found " + i + " times");
     }
 }

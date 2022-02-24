@@ -10,10 +10,11 @@ import abstractions.cube.ICubeSet;
 import implementation.Puzzle;
 import implementation.cube.CubeSorter;
 import implementation.solution.DynamicPuzzleSolution;
+import tooling.Observer;
 
 import java.util.*;
 
-public class StagedSolver implements IPuzzleSolver {
+public class StagedSolver implements IPuzzleSolver, Observer.IObservable {
     /** Immutable */
     public final int dimensionX, dimensionY, dimensionZ;
 
@@ -41,7 +42,7 @@ public class StagedSolver implements IPuzzleSolver {
 
         this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z), i -> true));
 
-        System.out.printf("Staring at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
+        System.out.printf("Starting at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
         if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
         this.set();
 
@@ -138,6 +139,18 @@ public class StagedSolver implements IPuzzleSolver {
 
     private boolean isFree(Integer cube) {
         return !this.usedIDs[cube];
+    }
+
+    @Override
+    public String get1Second() {
+        Stage zero = this.stages.peekFirst();
+        Stage last = this.stages.peekLast();
+
+        String lastStr = " (?/?)", zeroStr = ", StageZero(?/?)";
+        if(zero != null) zeroStr = ", StageZero(" + zero.results.index + "/" + zero.results.length() + ")";
+        if(last != null) lastStr = " (" + last.results.index + "/" + last.results.length() + ")";
+        return String.format("[%d] [%d,%d,%d] Stage %d%s%s",
+                iter, x, y, z, this.stages.size(), lastStr, zeroStr);
     }
 
     private record Stage(int x, int y, int z, CubeIterator results) {}

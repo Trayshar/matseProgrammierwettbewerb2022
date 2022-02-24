@@ -85,8 +85,15 @@ public class CubeSorter {
      * Returns the amount of cubes that are of the given type.
      */
     public int unique(CubeType type) {
-        prepareMatching(type.predicate);
-        return queries.get(type.predicate).length;
+        return unique(type.predicate);
+    }
+
+    /**
+     * Returns the amount of cubes that match the given filter uniquely
+     */
+    public int unique(ICubeFilter f) {
+        prepareMatching(f);
+        return queries.get(f).length;
     }
 
     /**

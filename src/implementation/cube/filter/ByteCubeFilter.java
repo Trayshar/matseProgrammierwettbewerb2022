@@ -4,6 +4,7 @@ import abstractions.Orientation;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
+import implementation.Puzzle;
 
 import java.util.Arrays;
 
@@ -27,6 +28,20 @@ public class ByteCubeFilter implements ICubeFilter {
     public ByteCubeFilter(Triangle... sides) {
         for (int i = 0; i < 6; i++) {
             this.sides[i] = (byte) sides[i].ordinal();
+        }
+    }
+
+    public ByteCubeFilter(ByteCubeFilter raw, Orientation o) {
+        for (int j = 0; j < 6; j++) {
+            if(raw.sides[j] != Triangle.None.ordinal()) { // Only write if there is a triangle
+                byte tmp  = (byte) (o.triangleOffset[j] + raw.sides[j]);
+                if (tmp > 4) tmp -= 4;
+                sides[o.side[j]] = tmp;
+                if(Puzzle.DEBUG && sides[o.side[j]] == 0) {
+                    sides[o.side[j]] = 1;
+                    System.out.printf("[] Illegal rotation operation (%d, %d)\n", o.triangleOffset[j], raw.sides[j]);
+                }
+            }
         }
     }
 
