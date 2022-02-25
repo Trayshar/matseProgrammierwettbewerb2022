@@ -1,15 +1,15 @@
 package abstractions.cube;
 
 public enum Triangle {
-    None, BottomLeft, TopLeft, TopRight, BottomRight, @Deprecated Any, AnyNotNone;
+    None, BottomLeft, TopLeft, TopRight, BottomRight, AnyNotNone;
 
     public int serialize() {
-        if(this == Any || this == AnyNotNone) throw new UnsupportedOperationException("Cannot serialize filter value \"" + this + "\"!");
+        if(this == AnyNotNone) throw new UnsupportedOperationException("Cannot serialize filter value \"" + this + "\"!");
         return this.ordinal();
     }
 
-    private static final Triangle[] matchingHorizontal = {None, TopLeft, BottomLeft, BottomRight, TopRight, Any, AnyNotNone};
-    private static final Triangle[] matchingVertical   = {None, BottomRight, TopRight, TopLeft, BottomLeft, Any, AnyNotNone};
+    private static final Triangle[] matchingHorizontal = {None, TopLeft, BottomLeft, BottomRight, TopRight, AnyNotNone};
+    private static final Triangle[] matchingVertical   = {None, BottomRight, TopRight, TopLeft, BottomLeft, AnyNotNone};
 
     public Triangle getMatching(boolean isVertical) {
         if(isVertical) {

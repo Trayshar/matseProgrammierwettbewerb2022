@@ -19,8 +19,6 @@ public class ByteCubeFilter implements ICubeFilter {
     private static final byte TopLeft = (byte) Triangle.TopLeft.ordinal();
     private static final byte TopRight = (byte) Triangle.TopRight.ordinal();
     private static final byte BottomRight = (byte) Triangle.BottomRight.ordinal();
-    @Deprecated
-    private static final byte Any = (byte) Triangle.Any.ordinal();
     private static final byte AnyNotNone = (byte) Triangle.AnyNotNone.ordinal();
 
     private final byte[] sides = new byte[6];

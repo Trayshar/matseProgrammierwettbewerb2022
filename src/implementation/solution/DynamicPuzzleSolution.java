@@ -51,9 +51,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         for(ICube.Side s : ICube.Side.values()) {
             int x2 = x + s.x, y2 = y + s.y, z2 = z + s.z;
             if(validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
-                //var t = this.filters[x2][y2][z2].cloneFilter();
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getMatching(s.z != 0));
-                //System.out.printf("[%d][%d][%d] Set filter %s, previous %s\n", x2, y2, z2, this.filters[x2][y2][z2], t);
             }
         }
 
@@ -66,13 +64,10 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     public int undo() {
         SetOperation op = this.operations.pollLast();
         if (op == null) return -1;
-        //System.out.printf("[%d][%d][%d] [Undo] PreCube: %s; CurCube: %s\n", op.x, op.y, op.z, op.previous, this.cubes[op.x][op.y][op.z]);
         for (ICube.Side s : ICube.Side.values()) {
             int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
             if (validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
-                //var t = this.filters[x2][y2][z2].cloneFilter();
                 this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
-                //System.out.printf("[%d][%d][%d] [Undo] Set filter %s , previous %s\n", x2, y2, z2, this.filters[x2][y2][z2], t);
             }
         }
         int id = 0;
