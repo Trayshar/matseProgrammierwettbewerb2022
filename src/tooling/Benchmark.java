@@ -35,7 +35,7 @@ public class Benchmark {
                             for (z = 1; z <= maxZ; z++) {
                                 double deltaT = 0d;
                                 for (int i = 0; i < runs; i++) {
-                                    if(i > runs/2 && deltaT*i == timeout) { // These keep timing out, so we skip them
+                                    if(i > runs/2 && Math.round(deltaT/i) >= timeout) { // These keep timing out, so we skip them
                                         deltaT += (runs-i) * timeout; // Adding skipped time
                                         System.out.println("Skipping " + (runs-i) + " runs due to timeout!");
                                         break;
