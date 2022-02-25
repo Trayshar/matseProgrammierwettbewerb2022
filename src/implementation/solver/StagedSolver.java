@@ -1,5 +1,6 @@
 package implementation.solver;
 
+import abstractions.FixedArrayStack;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
@@ -9,10 +10,10 @@ import implementation.Puzzle;
 import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
 
-import java.util.LinkedList;
+import java.util.Deque;
 
 public class StagedSolver implements IPuzzleSolver {
-    /** Immutable */
+    /* Immutable */
     public final int dimensionX, dimensionY, dimensionZ;
 
     /* Mutable */
@@ -21,7 +22,7 @@ public class StagedSolver implements IPuzzleSolver {
     private final ICubeSorter sorter;
     private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
-    private final LinkedList<Stage> stages = new LinkedList<>();
+    private final Deque<Stage> stages;
     private long iter = 0L;
 
     protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
@@ -31,6 +32,7 @@ public class StagedSolver implements IPuzzleSolver {
         this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
         this.sorter = CubeSorterFactory.from(cubes);
         this.usedIDs = new boolean[cubes.length + 1];
+        this.stages = new FixedArrayStack<>(new Stage[dimensionX*dimensionY*dimensionZ]);
     }
 
     private void prepare() throws PuzzleNotSolvableException {

@@ -84,7 +84,7 @@ public class Generator {
             File f = new File("result_files/selfcheck.out.txt");
             f.createNewFile();
             FileWriter fw = new FileWriter(f);
-            fw.write(String.format("Dimension: %d,%d,%d\n", dimensionX, dimensionY, dimensionZ));
+            fw.write(String.format("Dimension %d,%d,%d\n", dimensionX, dimensionY, dimensionZ));
             for (int x = 0; x < dimensionX; x++) {
                 for (int y = 0; y < dimensionY; y++) {
                     for (int z = 0; z < dimensionZ; z++) {

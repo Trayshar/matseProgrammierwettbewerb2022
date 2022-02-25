@@ -1,5 +1,6 @@
 package implementation.solution;
 
+import abstractions.FixedArrayStack;
 import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
@@ -7,13 +8,13 @@ import abstractions.cube.Triangle;
 import implementation.Puzzle;
 import implementation.cube.filter.CubeFilterFactory;
 
-import java.util.LinkedList;
+import java.util.Deque;
 
 public class DynamicPuzzleSolution implements IPuzzleSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     private final ICube[][][] cubes;
     private final ICubeFilter[][][] filters;
-    private final LinkedList<SetOperation> operations = new LinkedList<>();
+    private final Deque<SetOperation> operations;
 
     private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
 
@@ -23,6 +24,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         this.dimensionZ = dimensionZ;
         this.cubes = new ICube[dimensionX][dimensionY][dimensionZ];
         this.filters = new ICubeFilter[dimensionX][dimensionY][dimensionZ];
+        this.operations = new FixedArrayStack<>(new SetOperation[dimensionX*dimensionY*dimensionZ]);
 
         for (int x = 0; x < dimensionX; x++) {
             for (int y = 0; y < dimensionY; y++) {
