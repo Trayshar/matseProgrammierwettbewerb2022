@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.function.Predicate;
 
 /**
- * A data structure to store cubes and query for specific ones. Queries are cached.
+ * A data structure to store cubes and query for specific ones. Queries are cached using a HashMap.
  */
 public class HashCubeSorter implements ICubeSorter {
     /** Wrapper for a query result. God, why doesn't this language support tuples... */

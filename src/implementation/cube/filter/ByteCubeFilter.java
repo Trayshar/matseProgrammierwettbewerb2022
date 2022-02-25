@@ -85,6 +85,7 @@ public class ByteCubeFilter implements ICubeFilter {
         return new ByteCubeFilter(this.sides);
     }
 
+    //https://stackoverflow.com/a/25754257
     @Override
     public int getUniqueId() {
         return  sides[0] * 7776 +
