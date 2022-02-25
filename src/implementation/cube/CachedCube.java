@@ -57,7 +57,7 @@ public class CachedCube implements ICube {
     }
 
     @Override
-    public CachedCube clone() {
+    protected CachedCube clone() {
         try {
             return (CachedCube) super.clone();
         } catch (CloneNotSupportedException e) { // shouldn't happen

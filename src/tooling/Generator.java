@@ -32,8 +32,6 @@ import java.util.stream.Stream;
 public class Generator {
 
     private final static Random rand = new Random();
-
-
     private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
 
     public static Stream<ICube> generate(int dimensionX, int dimensionY, int dimensionZ, boolean shuffle, boolean rotate) {
@@ -76,7 +74,6 @@ public class Generator {
                     }
 
                     cubes[x][y][z] = new CachedCube(id++, triangles);
-                    //System.out.printf("[%d][%d][%d] Set initial cube: %s\n", x, y, z, cubes[x][y][z].serialize());
                 }
             }
         }
@@ -100,7 +97,6 @@ public class Generator {
                 System.exit(1);
             }
 
-            // Shuffle and rotate cubes, check if this worked too
             f = new File("result_files/selfcheck.in.txt");
             f.createNewFile();
             fw = new FileWriter(f);
@@ -179,10 +175,15 @@ public class Generator {
 
     }
 
+    public static void shutdown() {
+        observerExecutor.shutdownNow();
+        solverExecutor.shutdownNow();
+    }
+
     private static final ScheduledExecutorService observerExecutor = Executors.newSingleThreadScheduledExecutor();
     private static final ExecutorService solverExecutor = Executors.newSingleThreadExecutor();
 
-    public static double doTesting(int dimX, int dimY, int dimZ, boolean shuffle, boolean rotate) {
+    public static double doTesting(int dimX, int dimY, int dimZ, boolean shuffle, boolean rotate, int timeout) {
         System.out.printf("Generating puzzle: [%d, %d, %d] %s %s\n", dimX, dimY, dimZ, shuffle ? "shuffled" : "", rotate ? "rotated" : "");
         var cubes = generate(dimX, dimY, dimZ, shuffle, rotate).toArray(ICube[]::new);
         System.out.printf("Got %d cubes...\n", cubes.length);
@@ -198,7 +199,7 @@ public class Generator {
 
             long var3 = System.currentTimeMillis();
             solverHandle = solverExecutor.submit((Callable<IPuzzleSolution>) s);
-            solution = solverHandle.get(2, TimeUnit.MINUTES);
+            solution = solverHandle.get(timeout, TimeUnit.SECONDS);
             long var5 = System.currentTimeMillis();
 
             double time = (double)(var5 - var3) / 1000.0D;
@@ -240,7 +241,7 @@ public class Generator {
             return -1;
         } catch (TimeoutException e) {
             System.out.println("Timeout!");
-            return 120d;
+            return timeout;
         } finally {
             if(solverHandle != null) solverHandle.cancel(true);
             if(observerHandle != null) observerHandle.cancel(true);

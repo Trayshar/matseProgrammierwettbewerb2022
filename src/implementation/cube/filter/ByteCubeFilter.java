@@ -86,7 +86,17 @@ public class ByteCubeFilter implements ICubeFilter {
     }
 
     @Override
-    public ByteCubeFilter clone() {
+    public int getUniqueId() {
+        return  sides[0] * 7776 +
+                sides[1] * 1296 +
+                sides[2] * 216 +
+                sides[3] * 36 +
+                sides[4] * 6 +
+                sides[5];
+    }
+
+    @Override
+    protected ByteCubeFilter clone() {
         // Can't use native clone here since "sides" is a final array, which is cloned by reference
         return new ByteCubeFilter(this.sides);
     }
@@ -101,7 +111,7 @@ public class ByteCubeFilter implements ICubeFilter {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(sides);
+        return this.getUniqueId();
     }
 
     @Override

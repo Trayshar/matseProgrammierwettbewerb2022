@@ -53,4 +53,9 @@ public interface ICubeFilter extends Cloneable {
      * Returns a replica of this filter; Should default to Objects.clone.
      */
     ICubeFilter cloneFilter();
+
+    /**
+     * Returns a unique id matching this filter.
+     */
+    int getUniqueId();
 }

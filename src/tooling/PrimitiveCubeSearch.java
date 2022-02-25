@@ -6,9 +6,10 @@ import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
-import implementation.cube.CubeSorter;
 import implementation.cube.filter.ByteCubeFilter;
 import implementation.cube.filter.CubeFilterFactory;
+import implementation.cube.sorter.CubeSorterFactory;
+import implementation.cube.sorter.HashCubeSorter;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
@@ -19,7 +20,7 @@ public class PrimitiveCubeSearch {
     public static void main(String[] args) {
         // For all cube types
         for (CubeType t : CubeType.values()) {
-            CubeSorter s = new CubeSorter(new ICube[]{});
+            HashCubeSorter s = CubeSorterFactory.makeHashCubeSorter(new ICube[]{});
 
             // For all possible cubes of that type:
             forAllPermutations(t.predicate, f -> {
@@ -38,7 +39,7 @@ public class PrimitiveCubeSearch {
             }
 
             ICube[] cubes = get(s);
-            System.out.println("CubeType " + t + " with " + s.getSize() + " permutations needs " + cubes.length + " unique cubes:");
+            System.out.println("CubeType " + t + " with " + s.getNumCachedQueries() + " permutations needs " + cubes.length + " unique cubes:");
             for (ICube c : cubes) {
                 System.out.println(c.serialize());
             }
@@ -56,16 +57,16 @@ public class PrimitiveCubeSearch {
     private static Field fieldCS_given, fieldCS_queries;
     static {
         try {
-            fieldCS_given = CubeSorter.class.getDeclaredField("given");
+            fieldCS_given = HashCubeSorter.class.getDeclaredField("given");
             fieldCS_given.setAccessible(true);
-            fieldCS_queries = CubeSorter.class.getDeclaredField("queries");
+            fieldCS_queries = HashCubeSorter.class.getDeclaredField("queries");
             fieldCS_queries.setAccessible(true);
         } catch (NoSuchFieldException e) {
             e.printStackTrace();
         }
     }
 
-    private static ICube[] get(CubeSorter s) {
+    private static ICube[] get(HashCubeSorter s) {
         try {
             return (ICube[]) fieldCS_given.get(s);
         } catch (IllegalAccessException e) {
@@ -74,7 +75,7 @@ public class PrimitiveCubeSearch {
     }
 
     // Dear god why do I do this
-    private static void addCube(CubeSorter s, ICubeFilter mold) {
+    private static void addCube(HashCubeSorter s, ICubeFilter mold) {
         try {
             ICube[] newCubes = new ICube[s.getNumCubes()+1];
             ICube newCube = new CachedCube(s.getNumCubes()+1,

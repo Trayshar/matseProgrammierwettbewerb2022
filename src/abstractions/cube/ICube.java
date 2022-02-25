@@ -3,7 +3,6 @@ package abstractions.cube;
 import abstractions.Orientation;
 
 import java.util.ArrayList;
-import java.util.stream.Stream;
 
 /**
  * Represents a single cube with 6 sides, each having one triangle (or not)
@@ -41,8 +40,8 @@ public interface ICube extends Cloneable {
     int getNumTriangles();
 
     /**
-     * Returns a {@link Stream} of all possible {@link Orientation}s this cube matches the filter in.
-     * The resulting stream may be empty.
+     * Returns a List of all possible {@link Orientation}s this cube matches the filter in.
+     * The resulting list may be empty.
      */
     ArrayList<Orientation> match(ICubeFilter filter);
 

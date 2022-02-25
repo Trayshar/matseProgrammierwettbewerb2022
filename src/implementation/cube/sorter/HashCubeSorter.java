@@ -1,9 +1,9 @@
-package implementation.cube;
+package implementation.cube.sorter;
 
 import abstractions.Orientation;
-import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
+import abstractions.cube.ICubeSorter;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,7 +13,7 @@ import java.util.function.Predicate;
 /**
  * A data structure to store cubes and query for specific ones. Queries are cached.
  */
-public class CubeSorter {
+public class HashCubeSorter implements ICubeSorter {
     /** Wrapper for a query result. God, why doesn't this language support tuples... */
     private record QueryResult(int id, ICube[] cubes) {}
 
@@ -21,13 +21,11 @@ public class CubeSorter {
     /** Immutable */
     private final ICube[] given;
 
-    public CubeSorter(ICube[] cubes) {
+    protected HashCubeSorter(ICube[] cubes) {
         this.given = cubes;
     }
 
-    /**
-     * Makes a request and caches the result for later use.
-     */
+    @Override
     public void cache(ICubeFilter filter) {
         ArrayList<QueryResult> results = new ArrayList<>();
         ArrayList<ICube> cubes = new ArrayList<>();
@@ -64,10 +62,7 @@ public class CubeSorter {
 //        }
     }
 
-    /**
-     * Retrieves all cubes that match the given filter and who's ID satisfies the predicate in all their possible orientations.
-     * The resulting array might be empty.
-     */
+    @Override
     public ICube[] matching(ICubeFilter matcher, Predicate<Integer> filter) {
         prepareMatching(matcher);
 
@@ -81,31 +76,31 @@ public class CubeSorter {
         return cubes.toArray(new ICube[0]);
     }
 
-    /**
-     * Returns the amount of cubes that are of the given type.
-     */
-    public int unique(CubeType type) {
-        return unique(type.predicate);
+    @Override
+    public int count(ICubeFilter matcher, Predicate<Integer> filter) {
+        prepareMatching(matcher);
+        int count = 0;
+        for (QueryResult result : queries.get(matcher)) {
+            if(filter.test(result.id)) {
+                count += result.cubes.length;
+            }
+        }
+
+        return count;
     }
 
-    /**
-     * Returns the amount of cubes that match the given filter uniquely
-     */
+    @Override
     public int unique(ICubeFilter f) {
         prepareMatching(f);
         return queries.get(f).length;
     }
 
-    /**
-     * Returns the number of cached queries
-     */
-    public int getSize() {
+    @Override
+    public int getNumCachedQueries() {
         return this.queries.size();
     }
 
-    /**
-     * Returns the number of unique cubes this sorter has been initialized with
-     */
+    @Override
     public int getNumCubes() {
         return this.given.length;
     }

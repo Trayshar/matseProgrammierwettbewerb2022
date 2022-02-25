@@ -3,15 +3,13 @@ package implementation.solver;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
-import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
-import abstractions.cube.ICubeSet;
+import abstractions.cube.ICubeSorter;
 import implementation.Puzzle;
-import implementation.cube.CubeSorter;
+import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
 
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.LinkedList;
 
 public class StagedSolver implements IPuzzleSolver {
     /** Immutable */
@@ -20,7 +18,7 @@ public class StagedSolver implements IPuzzleSolver {
     /* Mutable */
     private final DynamicPuzzleSolution solution;
     private final boolean[] usedIDs;
-    private final CubeSorter sorter;
+    private final ICubeSorter sorter;
     private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
     private final LinkedList<Stage> stages = new LinkedList<>();
@@ -31,54 +29,36 @@ public class StagedSolver implements IPuzzleSolver {
         this.dimensionY = dimensionY;
         this.dimensionZ = dimensionZ;
         this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
-        this.sorter = new CubeSorter(cubes);
+        this.sorter = CubeSorterFactory.from(cubes);
         this.usedIDs = new boolean[cubes.length + 1];
     }
 
-    @Override
-    public IPuzzleSolution solve() throws PuzzleNotSolvableException {
-        CubeType.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
+    private void prepare() throws PuzzleNotSolvableException {
+        SolverFactory.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
 
-        final AtomicInteger tmp = new AtomicInteger(-1); // Why is this langauge like that
-        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z), i -> {
-            if(tmp.get() == -1) {
-                tmp.set(i);
-                return true;
-            }
-            return tmp.get() == i;
-        }));
+        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z)));
 
         System.out.printf("Starting at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
         if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
         this.set();
+    }
+
+    @Override
+    public IPuzzleSolution solve() throws PuzzleNotSolvableException {
+        this.prepare();
 
         while(setNextCoords()) {
             solveInternally();
         }
 
-        System.out.println("Done! Stats:");
-        System.out.printf("%d queries cached\n", this.sorter.getSize());
-        System.out.printf("Solver finished after %d iterations\n", iter);
+        this.done();
 
         return solution;
     }
 
     @Override
     public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
-        CubeType.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
-
-        final AtomicInteger tmp = new AtomicInteger(-1); // Why is this langauge like that
-        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z), i -> {
-            if(tmp.get() == -1) {
-                tmp.set(i);
-                return true;
-            }
-            return tmp.get() == i;
-        }));
-
-        System.out.printf("Starting at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
-        if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
-        this.set();
+        this.prepare();
 
         while(setNextCoords()) {
             if(Thread.currentThread().isInterrupted()) {
@@ -88,11 +68,15 @@ public class StagedSolver implements IPuzzleSolver {
             solveInternally();
         }
 
-        System.out.println("Done! Stats:");
-        System.out.printf("%d queries cached\n", this.sorter.getSize());
-        System.out.printf("Solver finished after %d iterations\n", iter);
+        this.done();
 
         return solution;
+    }
+
+    private void done() {
+        System.out.println("Done! Stats:");
+        System.out.printf("%d queries cached\n", this.sorter.getNumCachedQueries());
+        System.out.printf("Solver finished after %d iterations\n", iter);
     }
 
     private void solveInternally() throws PuzzleNotSolvableException {
