@@ -1,6 +1,7 @@
 package tooling;
 
 import abstractions.IPuzzleSolution;
+import abstractions.IPuzzleSolver;
 import abstractions.Orientation;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
@@ -8,7 +9,7 @@ import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
 import implementation.cube.filter.CubeFilterFactory;
-import implementation.solver.StagedSolver;
+import implementation.solver.SolverFactory;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -21,6 +22,7 @@ import java.net.URLClassLoader;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Random;
+import java.util.concurrent.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 import java.util.regex.Pattern;
@@ -30,8 +32,6 @@ import java.util.stream.Stream;
 public class Generator {
 
     private final static Random rand = new Random();
-
-
     private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
 
     public static Stream<ICube> generate(int dimensionX, int dimensionY, int dimensionZ, boolean shuffle, boolean rotate) {
@@ -74,7 +74,6 @@ public class Generator {
                     }
 
                     cubes[x][y][z] = new CachedCube(id++, triangles);
-                    //System.out.printf("[%d][%d][%d] Set initial cube: %s\n", x, y, z, cubes[x][y][z].serialize());
                 }
             }
         }
@@ -85,7 +84,7 @@ public class Generator {
             File f = new File("result_files/selfcheck.out.txt");
             f.createNewFile();
             FileWriter fw = new FileWriter(f);
-            fw.write(String.format("Dimension: %d,%d,%d\n", dimensionX, dimensionY, dimensionZ));
+            fw.write(String.format("Dimension %d,%d,%d\n", dimensionX, dimensionY, dimensionZ));
             for (int x = 0; x < dimensionX; x++) {
                 for (int y = 0; y < dimensionY; y++) {
                     for (int z = 0; z < dimensionZ; z++) {
@@ -98,7 +97,6 @@ public class Generator {
                 System.exit(1);
             }
 
-            // Shuffle and rotate cubes, check if this worked too
             f = new File("result_files/selfcheck.in.txt");
             f.createNewFile();
             fw = new FileWriter(f);
@@ -157,7 +155,7 @@ public class Generator {
             String mainClass;
             try (var jarFile = new JarFile(lib)) {
                 final Manifest manifest = jarFile.getManifest();
-                // Skip JarInJarLoader; As expected from eclipse libraries, they crash. So we are going straight to the source.
+                // Skip JarInJarLoader; As expected, eclipse libraries crash. So we are going straight to the source.
                 mainClass = manifest.getMainAttributes().getValue("Rsrc-Main-Class");
                 if (mainClass == null) mainClass = manifest.getMainAttributes().getValue("Main-Class");
             }
@@ -177,16 +175,33 @@ public class Generator {
 
     }
 
-    public static double doTesting(int dimX, int dimY, int dimZ, boolean shuffle, boolean rotate) {
+    public static void shutdown() {
+        observerExecutor.shutdownNow();
+        solverExecutor.shutdownNow();
+    }
+
+    private static final ScheduledExecutorService observerExecutor = Executors.newSingleThreadScheduledExecutor();
+    private static final ExecutorService solverExecutor = Executors.newSingleThreadExecutor();
+
+    public static double doTesting(int dimX, int dimY, int dimZ, boolean shuffle, boolean rotate, int timeout) {
         System.out.printf("Generating puzzle: [%d, %d, %d] %s %s\n", dimX, dimY, dimZ, shuffle ? "shuffled" : "", rotate ? "rotated" : "");
         var cubes = generate(dimX, dimY, dimZ, shuffle, rotate).toArray(ICube[]::new);
         System.out.printf("Got %d cubes...\n", cubes.length);
+        Future<IPuzzleSolution> solverHandle = null;
+        ScheduledFuture<?> observerHandle = null;
+        IPuzzleSolution solution = null;
         try{
-            printMemoryStats();
+            //printMemoryStats();
             System.out.println("--- Starting solver ---");
+
+            IPuzzleSolver s = SolverFactory.getSolver(dimX, dimY, dimZ, cubes);
+            observerHandle = observerExecutor.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
+
             long var3 = System.currentTimeMillis();
-            IPuzzleSolution solution = new StagedSolver(dimX, dimY, dimZ, cubes).solve(0, 0, 0, null);
+            solverHandle = solverExecutor.submit((Callable<IPuzzleSolution>) s);
+            solution = solverHandle.get(timeout, TimeUnit.SECONDS);
             long var5 = System.currentTimeMillis();
+
             double time = (double)(var5 - var3) / 1000.0D;
             System.out.println("--- Solver finished ---");
             System.out.printf("Took %f seconds.\n", time);
@@ -203,23 +218,34 @@ public class Generator {
             if(Pattern.compile(".*Puzzle enthält \\d+ Fehler!.*").matcher(result).find()) {
                 System.err.println("Failed to solve puzzle!");
                 System.err.print(result);
-                return 0d;
+                throw new PuzzleNotSolvableException();
             }
 
             result = executeExternalJar("library/validator.jar", new String[]{"result_files/selfcheck.in.txt", "result_files/selfcheck.out.txt"});
             if(Pattern.compile(".* insgesamt \\d+ Fehler auf!.*").matcher(result).find()) {
                 System.err.println("Failed to solve puzzle!");
                 System.err.print(result);
-                return 0d;
+                throw new PuzzleNotSolvableException();
             }
 
             return time;
-        }catch (PuzzleNotSolvableException e) {
-            System.err.println("Failed to solve puzzle!");
-        } catch (IOException | IllegalStateException e) {
+        }catch (PuzzleNotSolvableException | ExecutionException e) {
+            System.err.println("Failed to solve puzzle! Dump: ");
+            System.out.printf("Solution: %s\n", solution == null ? "null" : solution.serialize());
+            System.out.printf("Cubes: %s\n", Arrays.toString(Arrays.stream(cubes).map(ICube::serialize).toArray()));
+            System.exit(-1);
+            return -1;
+        } catch (IOException | IllegalStateException | InterruptedException e) {
             e.printStackTrace();
+            System.exit(-1);
+            return -1;
+        } catch (TimeoutException e) {
+            System.out.println("Timeout!");
+            return timeout;
+        } finally {
+            if(solverHandle != null) solverHandle.cancel(true);
+            if(observerHandle != null) observerHandle.cancel(true);
         }
-        return -1d;
     }
 
     private static void printMemoryStats() {

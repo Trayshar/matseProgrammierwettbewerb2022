@@ -4,6 +4,7 @@ import abstractions.Orientation;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
+import implementation.Puzzle;
 
 import java.util.Arrays;
 
@@ -18,8 +19,6 @@ public class ByteCubeFilter implements ICubeFilter {
     private static final byte TopLeft = (byte) Triangle.TopLeft.ordinal();
     private static final byte TopRight = (byte) Triangle.TopRight.ordinal();
     private static final byte BottomRight = (byte) Triangle.BottomRight.ordinal();
-    @Deprecated
-    private static final byte Any = (byte) Triangle.Any.ordinal();
     private static final byte AnyNotNone = (byte) Triangle.AnyNotNone.ordinal();
 
     private final byte[] sides = new byte[6];
@@ -27,6 +26,20 @@ public class ByteCubeFilter implements ICubeFilter {
     public ByteCubeFilter(Triangle... sides) {
         for (int i = 0; i < 6; i++) {
             this.sides[i] = (byte) sides[i].ordinal();
+        }
+    }
+
+    public ByteCubeFilter(ByteCubeFilter raw, Orientation o) {
+        for (int j = 0; j < 6; j++) {
+            if(raw.sides[j] != Triangle.None.ordinal()) { // Only write if there is a triangle
+                byte tmp  = (byte) (o.triangleOffset[j] + raw.sides[j]);
+                if (tmp > 4) tmp -= 4;
+                sides[o.side[j]] = tmp;
+                if(Puzzle.DEBUG && sides[o.side[j]] == 0) {
+                    sides[o.side[j]] = 1;
+                    System.out.printf("[] Illegal rotation operation (%d, %d)\n", o.triangleOffset[j], raw.sides[j]);
+                }
+            }
         }
     }
 
@@ -52,6 +65,11 @@ public class ByteCubeFilter implements ICubeFilter {
     }
 
     @Override
+    public void setSide(byte side, byte triangle) {
+        this.sides[side] = triangle;
+    }
+
+    @Override
     public Triangle getSide(ICube.Side side) {
         return Triangle.valueOf(this.sides[side.ordinal()]);
     }
@@ -72,8 +90,19 @@ public class ByteCubeFilter implements ICubeFilter {
         return new ByteCubeFilter(this.sides);
     }
 
+    //https://stackoverflow.com/a/25754257
     @Override
-    public ByteCubeFilter clone() {
+    public int getUniqueId() {
+        return  sides[0] * 7776 +
+                sides[1] * 1296 +
+                sides[2] * 216 +
+                sides[3] * 36 +
+                sides[4] * 6 +
+                sides[5];
+    }
+
+    @Override
+    protected ByteCubeFilter clone() {
         // Can't use native clone here since "sides" is a final array, which is cloned by reference
         return new ByteCubeFilter(this.sides);
     }
@@ -88,7 +117,7 @@ public class ByteCubeFilter implements ICubeFilter {
 
     @Override
     public int hashCode() {
-        return Arrays.hashCode(sides);
+        return this.getUniqueId();
     }
 
     @Override

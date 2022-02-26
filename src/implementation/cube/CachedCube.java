@@ -57,7 +57,7 @@ public class CachedCube implements ICube {
     }
 
     @Override
-    public CachedCube clone() {
+    protected CachedCube clone() {
         try {
             return (CachedCube) super.clone();
         } catch (CloneNotSupportedException e) { // shouldn't happen
@@ -120,5 +120,10 @@ public class CachedCube implements ICube {
     @Override
     public String toString() {
         return this.serialize();
+    }
+
+    @Override
+    public byte getMatchingTriangle(int side, boolean isVertical) {
+        return Triangle.getMatching(this.data[this.orientation.ordinal()][side], isVertical);
     }
 }

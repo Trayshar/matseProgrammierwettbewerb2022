@@ -9,7 +9,7 @@ public record Coordinate(int x, int y, int z) {
     }
 
     /**
-     * Generates a stream of coordinates, each starting at 0 and stopping at c < maxC
+     * Generates a stream of coordinates, each starting at 0 and stopping at {c} < max{C}
      */
     public static Stream<Coordinate> generate(int maxX, int maxY, int maxZ) {
         var b = Stream.<Coordinate>builder();

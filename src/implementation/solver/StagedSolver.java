@@ -1,80 +1,98 @@
 package implementation.solver;
 
-import abstractions.Coordinate;
+import abstractions.FixedArrayStack;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
-import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
-import abstractions.cube.ICubeSet;
+import abstractions.cube.ICubeSorter;
 import implementation.Puzzle;
-import implementation.cube.CubeSorter;
+import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
 
-import java.util.*;
-
 public class StagedSolver implements IPuzzleSolver {
-    /** Immutable */
+    /* Immutable */
     public final int dimensionX, dimensionY, dimensionZ;
 
     /* Mutable */
     private final DynamicPuzzleSolution solution;
     private final boolean[] usedIDs;
-    private final CubeSorter sorter;
+    private final ICubeSorter sorter;
     private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
-    private final LinkedList<Stage> stages = new LinkedList<>();
+    private final FixedArrayStack<Stage> stages;
     private long iter = 0L;
 
-    public StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
+    protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
         this.dimensionX = dimensionX;
         this.dimensionY = dimensionY;
         this.dimensionZ = dimensionZ;
         this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
-        this.sorter = new CubeSorter(cubes);
+        this.sorter = CubeSorterFactory.from(cubes);
         this.usedIDs = new boolean[cubes.length + 1];
+        this.stages = new FixedArrayStack<>(new Stage[dimensionX*dimensionY*dimensionZ]);
+    }
+
+    private void prepare() throws PuzzleNotSolvableException {
+        SolverFactory.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
+
+        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z)));
+
+        System.out.printf("Starting at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
+        if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
+        this.set();
     }
 
     @Override
-    public IPuzzleSolution solve(int _1, int _2, int _3, ICubeSet _4) throws PuzzleNotSolvableException {
-        CubeType.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
-
-        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z), i -> true));
-
-        System.out.printf("Staring at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
-        if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
-        this.set();
+    public IPuzzleSolution solve() throws PuzzleNotSolvableException {
+        this.prepare();
 
         while(setNextCoords()) {
-            solve();
+            solveInternally();
         }
 
-        System.out.println("Done! Stats:");
-        System.out.printf("%d queries cached\n", this.sorter.getSize());
-        System.out.printf("Solver finished after %d iterations\n", iter);
+        this.done();
 
         return solution;
     }
 
-    private void solve() throws PuzzleNotSolvableException {
-        // x, y, z set here
-        //System.out.printf("(Stage %d) Running for coords %d %d %d\n", this.stages.size(), x, y, z);
+    @Override
+    public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
+        this.prepare();
 
+        while(setNextCoords()) {
+            if(Thread.currentThread().isInterrupted()) {
+                System.out.println("Got interrupted, exiting!");
+                return null;
+            }
+            solveInternally();
+        }
+
+        this.done();
+
+        return solution;
+    }
+
+    private void done() {
+        System.out.println("Done! Stats:");
+        System.out.printf("%d queries cached\n", this.sorter.getNumCachedQueries());
+        System.out.printf("Solver finished after %d iterations\n", iter);
+    }
+
+    private void solveInternally() throws PuzzleNotSolvableException {
+        // x, y, z set here
         if(this.currentQuery == null) {
             this.currentQuery = new CubeIterator(
                     this.sorter.matching(solution.getFilterAt(x, y, z), this::isFree));
-            //System.out.println("Current query is empty; Generating new one!");
         }
-        //System.out.printf("Current query: %d/ %d elements\n", currentQuery.index + 1, currentQuery.length());
         if(currentQuery.hasNext()) {
             this.set();
         }else { // Nothing found for this step; Stopping and tracing back;
             this.undo();
-            this.solve();
+            this.solveInternally();
         }
 
         iter++;
-        //System.out.println("-----------------------");
     }
 
     /**
@@ -138,6 +156,18 @@ public class StagedSolver implements IPuzzleSolver {
 
     private boolean isFree(Integer cube) {
         return !this.usedIDs[cube];
+    }
+
+    @Override
+    public String getCurrentStatus() {
+        Stage zero = this.stages.peekFirst();
+        Stage last = this.stages.peekLast();
+
+        String lastStr = " (?/?)", zeroStr = ", StageZero(?/?)";
+        if(zero != null) zeroStr = ", StageZero(" + zero.results.index + "/" + zero.results.length() + ")";
+        if(last != null) lastStr = " (" + last.results.index + "/" + last.results.length() + ")";
+        return String.format("[%d] [%d,%d,%d] Stage %d%s%s",
+                iter, x, y, z, this.stages.size(), lastStr, zeroStr);
     }
 
     private record Stage(int x, int y, int z, CubeIterator results) {}

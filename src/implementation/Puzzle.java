@@ -1,17 +1,21 @@
 package implementation;
 
 import abstractions.IPuzzleSolution;
+import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
-import implementation.solver.StagedSolver;
+import implementation.solver.SolverFactory;
 import mdw2021.IPuzzle;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 public class Puzzle implements IPuzzle {
 	/** flag to control if this is run in debug mode. */
@@ -45,7 +49,15 @@ public class Puzzle implements IPuzzle {
 
 	public void solve() {
 		try {
-			this.solution = new StagedSolver(dimensionX, dimensionY, dimensionZ, cubes).solve(0, 0, 0, null);
+			IPuzzleSolver s = SolverFactory.getSolver(dimensionX, dimensionY, dimensionZ, cubes);
+			if(Puzzle.DEBUG) {
+				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
+				executorService.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
+				this.solution = s.solve();
+				executorService.shutdownNow();
+			}else {
+				this.solution = s.solve();
+			}
 		} catch (PuzzleNotSolvableException e) {
 			e.printStackTrace();
 			this.solution = null;
