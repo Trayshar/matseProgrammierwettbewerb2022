@@ -12,7 +12,8 @@ import java.util.Iterator;
  */
 public class FixedArrayStack<T> implements Deque<T> {
     private final T[] data;
-    private int index = 0;
+    /** Index of the first value */
+    private int index = -1;
 
     public FixedArrayStack(T[] data) {
         this.data = data;
@@ -147,7 +148,7 @@ public class FixedArrayStack<T> implements Deque<T> {
 
     @Override
     public void clear() {
-        index = 0;
+        index = -1;
     }
 
     @Override
@@ -177,12 +178,12 @@ public class FixedArrayStack<T> implements Deque<T> {
 
     @Override
     public int size() {
-        return index;
+        return index + 1;
     }
 
     @Override
     public boolean isEmpty() {
-        return index == 0;
+        return index < 0;
     }
 
     @Override

@@ -30,6 +30,20 @@ public interface ICube extends Cloneable {
     Triangle getTriangle(Side side, Orientation orientation);
 
     /**
+     * Returns the matching triangle of this for the given side.
+     */
+    default byte getMatchingTriangle(int side, boolean isVertical) {
+        return (byte) this.getTriangle(Side.valueOf(side)).getMatching(isVertical).ordinal();
+    }
+
+    /**
+     * Returns the matching triangle of this for the given side.
+     */
+    default byte getMatchingTriangle(int side) {
+        return this.getMatchingTriangle(side, Side.valueOf(side).z != 0);
+    }
+
+    /**
      * Returns the unique identifier of this cube.
      */
     int getIdentifier();
@@ -81,6 +95,28 @@ public interface ICube extends Cloneable {
 
         public Side getOpposite() {
             return opposite[this.ordinal()];
+        }
+
+        /**
+         * Enum.values() clones the array to stop modification of the enum data (God, I sometimes hate this langauge).
+         * We need performance, so we don't care about safety.
+         */
+        private static final Side[] values = values();
+
+        /**
+         * Faster brother of Enum.values(). DO NOT MODIFY THE VALUES RETURNED
+         */
+        public static Side[] getValues() {
+            return values;
+        }
+
+        /**
+         * Returns the side for the given ordinal. DO NOT MODIFY THE VALUE RETURNED
+         */
+        public static Side valueOf(int ordinal) {
+            assert ordinal >= 0 && ordinal < values.length;
+
+            return values[ordinal];
         }
     }
 }

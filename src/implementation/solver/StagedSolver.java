@@ -10,8 +10,6 @@ import implementation.Puzzle;
 import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
 
-import java.util.Deque;
-
 public class StagedSolver implements IPuzzleSolver {
     /* Immutable */
     public final int dimensionX, dimensionY, dimensionZ;
@@ -22,7 +20,7 @@ public class StagedSolver implements IPuzzleSolver {
     private final ICubeSorter sorter;
     private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
-    private final Deque<Stage> stages;
+    private final FixedArrayStack<Stage> stages;
     private long iter = 0L;
 
     protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {

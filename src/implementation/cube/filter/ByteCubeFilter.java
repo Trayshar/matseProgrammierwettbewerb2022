@@ -65,6 +65,11 @@ public class ByteCubeFilter implements ICubeFilter {
     }
 
     @Override
+    public void setSide(byte side, byte triangle) {
+        this.sides[side] = triangle;
+    }
+
+    @Override
     public Triangle getSide(ICube.Side side) {
         return Triangle.valueOf(this.sides[side.ordinal()]);
     }

@@ -121,4 +121,9 @@ public class CachedCube implements ICube {
     public String toString() {
         return this.serialize();
     }
+
+    @Override
+    public byte getMatchingTriangle(int side, boolean isVertical) {
+        return Triangle.getMatching(this.data[this.orientation.ordinal()][side], isVertical);
+    }
 }

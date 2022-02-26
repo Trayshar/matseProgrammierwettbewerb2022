@@ -50,13 +50,34 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
             System.err.printf("[%d][%d][%d] Cube %s doesnt fit %s\n", x, y, z, cube.serialize(), this.filters[x][y][z]);
             throw new IllegalArgumentException("The given cube does not fit!");
         }
-        for(ICube.Side s : ICube.Side.values()) {
-            int x2 = x + s.x, y2 = y + s.y, z2 = z + s.z;
-            if(validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
-                this.filters[x2][y2][z2].setSide(s.getOpposite(), cube.getTriangle(s).getMatching(s.z != 0));
-            }
+        // Setting filters around this cube, so they have to match the cube we set now
+
+        int z2 = z + 1; // Side: Up
+        if(validZ(z2) && this.cubes[x][y][z2] == null) {
+            this.filters[x][y][z2].setSide((byte) 5, cube.getMatchingTriangle(0, true));
+        }
+        z2 = z - 1; // Side: Down
+        if(validZ(z2) && this.cubes[x][y][z2] == null) {
+            this.filters[x][y][z2].setSide((byte) 0, cube.getMatchingTriangle(5, true));
+        }
+        int y2 = y - 1; // Side: Left
+        if(validY(y2) && this.cubes[x][y2][z] == null) {
+            this.filters[x][y2][z].setSide((byte) 3, cube.getMatchingTriangle(1, false));
+        }
+        y2 = y + 1; // Side: Right
+        if(validY(y2) && this.cubes[x][y2][z] == null) {
+            this.filters[x][y2][z].setSide((byte) 1, cube.getMatchingTriangle(3, false));
+        }
+        int x2 = x + 1; // Side: Front
+        if(validX(x2) && this.cubes[x2][y][z] == null) {
+            this.filters[x2][y][z].setSide((byte) 4, cube.getMatchingTriangle(2, false));
+        }
+        x2 = x - 1; // Side: Back
+        if(validX(x2) && this.cubes[x2][y][z] == null) {
+            this.filters[x2][y][z].setSide((byte) 2, cube.getMatchingTriangle(4, false));
         }
 
+        // Setting the cube
         ICube tmp = this.cubes[x][y][z];
         this.operations.addLast(new SetOperation(x, y, z, tmp));
         this.cubes[x][y][z] = cube;
@@ -66,15 +87,39 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     public int undo() {
         SetOperation op = this.operations.pollLast();
         if (op == null) return -1;
-        for (ICube.Side s : ICube.Side.values()) {
-            int x2 = op.x + s.x, y2 = op.y + s.y, z2 = op.z + s.z;
-            if (validX(x2) && validY(y2) && validZ(z2) && this.cubes[x2][y2][z2] == null) {
-                this.filters[x2][y2][z2].setSide(s.getOpposite(), Triangle.AnyNotNone);
-            }
+        int x = op.x, y = op.y, z = op.z;
+
+        // Resetting filters
+
+        int z2 = z + 1; // Side: Up
+        if(validZ(z2) && this.cubes[x][y][z2] == null) {
+            this.filters[x][y][z2].setSide((byte) 5, (byte) 5);
         }
+        z2 = z - 1; // Side: Down
+        if(validZ(z2) && this.cubes[x][y][z2] == null) {
+            this.filters[x][y][z2].setSide((byte) 0, (byte) 5);
+        }
+        int y2 = y - 1; // Side: Left
+        if(validY(y2) && this.cubes[x][y2][z] == null) {
+            this.filters[x][y2][z].setSide((byte) 3, (byte) 5);
+        }
+        y2 = y + 1; // Side: Right
+        if(validY(y2) && this.cubes[x][y2][z] == null) {
+            this.filters[x][y2][z].setSide((byte) 1, (byte) 5);
+        }
+        int x2 = x + 1; // Side: Front
+        if(validX(x2) && this.cubes[x2][y][z] == null) {
+            this.filters[x2][y][z].setSide((byte) 4, (byte) 5);
+        }
+        x2 = x - 1; // Side: Back
+        if(validX(x2) && this.cubes[x2][y][z] == null) {
+            this.filters[x2][y][z].setSide((byte) 2, (byte) 5);
+        }
+
+        // Resetting cube
         int id = 0;
-        if(this.cubes[op.x][op.y][op.z] != null) id = this.cubes[op.x][op.y][op.z].getIdentifier();
-        this.cubes[op.x][op.y][op.z] = op.previous;
+        if(this.cubes[x][y][z] != null) id = this.cubes[x][y][z].getIdentifier();
+        this.cubes[x][y][z] = op.previous;
         return id;
     }
 

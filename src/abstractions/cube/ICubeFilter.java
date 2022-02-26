@@ -42,6 +42,11 @@ public interface ICubeFilter extends Cloneable {
      */
     void setSide(ICube.Side side, Triangle triangle);
 
+    /**
+     * Modifies this side of the filter
+     */
+    void setSide(byte side, byte triangle);
+
     Triangle getSide(ICube.Side side);
 
     /**

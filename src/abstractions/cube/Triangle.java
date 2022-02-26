@@ -18,6 +18,16 @@ public enum Triangle {
         return matchingHorizontal[this.ordinal()];
     }
 
+    private static final byte[] matchingHorizontalId = {0, 2, 1, 4, 3, 5};
+    private static final byte[] matchingVerticalId   = {0, 4, 3, 2, 1, 5};
+
+    public static byte getMatching(int triangle, boolean isVertical) {
+        if(isVertical) {
+            return matchingVerticalId[triangle];
+        }
+        return matchingHorizontalId[triangle];
+    }
+
     /**
      * Enum.values() clones the array to stop modification of the enum data (God, I sometimes hate this langauge).
      * We need performance, so we don't care about safety.
