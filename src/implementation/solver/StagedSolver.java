@@ -1,6 +1,6 @@
 package implementation.solver;
 
-import abstractions.FixedArrayStack;
+import implementation.FixedArrayStack;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
@@ -17,6 +17,7 @@ public class StagedSolver implements IPuzzleSolver {
     /* Mutable */
     private final DynamicPuzzleSolution solution;
     private final boolean[] usedIDs;
+    private final boolean[][][] solved;
     private final ICubeSorter sorter;
     private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
@@ -31,6 +32,7 @@ public class StagedSolver implements IPuzzleSolver {
         this.sorter = CubeSorterFactory.from(cubes);
         this.usedIDs = new boolean[cubes.length + 1];
         this.stages = new FixedArrayStack<>(new Stage[dimensionX*dimensionY*dimensionZ]);
+        this.solved = new boolean[dimensionX][dimensionY][dimensionZ];
     }
 
     private void prepare() throws PuzzleNotSolvableException {
@@ -95,25 +97,28 @@ public class StagedSolver implements IPuzzleSolver {
         iter++;
     }
 
+    private int sols = 0;
+
     /**
      * Goes in x direction till the end, then y, then z.
      */
     private boolean setNextCoords() {
-        if(validX(x + 1) && this.solution.getSolutionAt(x + 1, y, z) == null) {
+        if(validX(x + 1) && !this.solved[x+1][y][z]) {
             this.x++;
             return true;
-        }else if(validY(y + 1) && this.solution.getSolutionAt(0, y + 1, z) == null) {
+        }else if(validY(y + 1) && !this.solved[0][y+1][z]) {
             this.x = 0;
             this.y++;
             return true;
-        }else if(validZ(z + 1) && this.solution.getSolutionAt(0, 0, z + 1) == null) {
+        }else if(validZ(z + 1) && !this.solved[0][0][z+1]) {
             this.x = 0;
             this.y = 0;
             this.z++;
             return true;
         }
 
-        return false;
+        System.out.printf("- Found solution %d -\n", sols++);
+        return Puzzle.DEBUG; // Only returns the first solution if DEBUG is false; Look for other solutions otherwise
     }
 
     private boolean validX(int val) {
@@ -130,23 +135,26 @@ public class StagedSolver implements IPuzzleSolver {
 
     private void set() {
         ICube cube = currentQuery.next();
-        //System.out.printf("[%d][%d][%d] Set cube: %s\n", x, y, z, cube.serialize());
         this.usedIDs[cube.getIdentifier()] = true;
+        this.solved[x][y][z] = true;
         this.solution.set(x, y, z, cube);
         this.stages.addLast(new Stage(x, y, z, currentQuery));
         this.currentQuery = null;
     }
 
     private void undo() throws PuzzleNotSolvableException {
+        // Retrieves and removes the last stage
         Stage g = this.stages.pollLast();
         if(g == null) throw new PuzzleNotSolvableException();
 
+        // Undoes the operation in the solution object and freeing the id of the used cube
         int id = this.solution.undo();
         if(id == -1) throw new PuzzleNotSolvableException();
-        if (id > 0) {
-            if(Puzzle.DEBUG && !this.usedIDs[id]) throw new IllegalStateException("Trying to free ID " + id + " which wasn't used!");
-            this.usedIDs[id] = false;
+        if (Puzzle.DEBUG && id > 0 && !this.usedIDs[id]) {
+            throw new IllegalStateException("Trying to free ID " + id + " which wasn't used!");
         }
+        this.usedIDs[id] = false; // Skipping 0 check since id=0 isn't used anyway
+        this.solved[x][y][z] = false;
 
         this.x = g.x;
         this.y = g.y;

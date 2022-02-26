@@ -1,6 +1,6 @@
 package implementation.solution;
 
-import abstractions.FixedArrayStack;
+import implementation.FixedArrayStack;
 import abstractions.IPuzzleSolution;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
@@ -85,8 +85,8 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     }
 
     public int undo() {
-        SetOperation op = this.operations.pollLast();
-        if (op == null) return -1;
+        SetOperation op = this.operations.removeLast();
+        //if (op == null) return -1; // Will never happen
         int x = op.x, y = op.y, z = op.z;
 
         // Resetting filters

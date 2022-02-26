@@ -1,9 +1,12 @@
 package implementation.cube.sorter;
 
 import abstractions.Orientation;
+import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.ICubeSorter;
+import implementation.Puzzle;
+import implementation.cube.filter.ByteCubeFilter;
 
 import java.util.ArrayList;
 import java.util.function.Predicate;
@@ -124,6 +127,25 @@ public class ArrayCubeSorter implements ICubeSorter {
         int index = f.getUniqueId();
         QuerySet query = this.queries[index];
         if(query == null) query = this.cache(f, index);
+
+        return query.results.length;
+    }
+
+    @Override
+    public int unique(CubeType type) {
+        int index = type.predicate.getUniqueId();
+        QuerySet query = this.queries[index];
+        if(query == null) query = this.cache(type.predicate, index);
+
+        if(Puzzle.DEBUG) {
+            int duplicates = 0;
+            for (QueryResult result : query.results) {
+                if(result.cubes.length > 0) {
+                    if(this.unique(new ByteCubeFilter(result.cubes[0].getTriangles())) > 1) duplicates++;
+                }
+            }
+            System.out.printf("Found %d duplicates in CubeType %s\n", duplicates, type);
+        }
 
         return query.results.length;
     }

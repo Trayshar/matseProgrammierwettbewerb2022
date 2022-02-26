@@ -230,9 +230,9 @@ public class Generator {
 
             return time;
         }catch (PuzzleNotSolvableException | ExecutionException e) {
-            System.err.println("Failed to solve puzzle! Dump: ");
-            System.out.printf("Solution: %s\n", solution == null ? "null" : solution.serialize());
-            System.out.printf("Cubes: %s\n", Arrays.toString(Arrays.stream(cubes).map(ICube::serialize).toArray()));
+            System.err.println("Failed to solve puzzle: " + e.getMessage());
+            System.err.printf("Solution: %s\n", solution == null ? "null" : solution.serialize());
+            System.err.printf("Cubes: %s\n", Arrays.toString(Arrays.stream(cubes).map(ICube::serialize).toArray()));
             System.exit(-1);
             return -1;
         } catch (IOException | IllegalStateException | InterruptedException e) {
