@@ -6,6 +6,7 @@ import abstractions.cube.ICubeSorter;
 public final class CubeSorterFactory {
 
     public static ICubeSorter from(ICube[] cubes) {
+        if(cubes.length < 20 ) return new HashCubeSorter(cubes);
         return new ArrayCubeSorter(cubes);
     }
 
