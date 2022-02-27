@@ -63,4 +63,9 @@ public interface ICubeFilter extends Cloneable {
      * Returns a unique id matching this filter.
      */
     int getUniqueId();
+
+    /**
+     * Returns all triangles
+     */
+    byte[] getTriangles();
 }

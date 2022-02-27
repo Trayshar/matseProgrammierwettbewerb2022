@@ -24,4 +24,12 @@ public record Coordinate(int x, int y, int z) {
 
         return b.build();
     }
+
+    public interface CoordinateIterator {
+        boolean hasNext();
+
+        Coordinate next();
+
+        Coordinate peekNext();
+    }
 }

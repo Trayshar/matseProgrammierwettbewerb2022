@@ -102,6 +102,11 @@ public class ByteCubeFilter implements ICubeFilter {
     }
 
     @Override
+    public byte[] getTriangles() {
+        return this.sides;
+    }
+
+    @Override
     protected ByteCubeFilter clone() {
         // Can't use native clone here since "sides" is a final array, which is cloned by reference
         return new ByteCubeFilter(this.sides);

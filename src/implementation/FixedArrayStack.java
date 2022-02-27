@@ -1,4 +1,4 @@
-package abstractions;
+package implementation;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -6,9 +6,9 @@ import java.util.Deque;
 import java.util.Iterator;
 
 /**
- * A messy Stack implementation using a fixed-size array.
+ * A messy Stack implementation using a fixed-size array. Indexing beyond that is unchecked and will throw a {@link IndexOutOfBoundsException}.
  * Messy meaning it won't clean up removed elements by default, so they stay in memory until they are overwritten.
- * Use the removeLastTidily if that's what you want.
+ * Use the removeLastTidily if you want to clean after yourself.
  */
 public class FixedArrayStack<T> implements Deque<T> {
     private final T[] data;
@@ -68,6 +68,7 @@ public class FixedArrayStack<T> implements Deque<T> {
 
     @Override
     public T pollLast() {
+        if(index < 0) return null;
         return data[index--];
     }
 

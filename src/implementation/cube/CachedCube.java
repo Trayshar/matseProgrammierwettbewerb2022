@@ -20,6 +20,10 @@ public class CachedCube implements ICube {
     public final int identifier;
     /** The number of triangles this cube has */
     public final int triangles;
+    /** The unique id of this cube */
+    public final int uniqueCubeId;
+
+    private static final int[] pow5 = {1, 5, 25, 125, 625, 3125};
 
     /**
      * @param identifier The unique number this cube has
@@ -31,29 +35,35 @@ public class CachedCube implements ICube {
         this.data = new byte[24][6];
         this.identifier = identifier;
 
-        for (int i = 0; i < 24; i++) {
+        int id = Integer.MAX_VALUE;
+        for (int i = 0; i < 24; i++) { // For each of the 24 orientations
+            int tmpId = 0;
             Orientation o = Orientation.get(i);
-            for (int j = 0; j < 6; j++) {
+            for (int j = 0; j < 6; j++) { // For each of the 6 sides of the cube
                 if(triangles[j] != Triangle.None) { // Only write if there is a triangle
-                    byte tmp  = (byte) (o.triangleOffset[j] + triangles[j].ordinal());
-                    if (tmp > 4) tmp -= 4;
-                    data[i][o.side[j]] = tmp;
+                    byte triangle  = (byte) (o.triangleOffset[j] + triangles[j].ordinal()); // Calculate the triangle on this side
+                    if (triangle > 4) triangle -= 4; // Normalise it
+                    data[i][o.side[j]] = triangle; // Set it
+                    tmpId += triangle * pow5[j]; // Apply the formula for ID calculation: sum(0 ≤ i < 6 ): side[i] * 5^i
                     if(Puzzle.DEBUG && data[i][o.side[j]] == 0) {
                         data[i][o.side[j]] = 1;
                         System.out.printf("[%s] Illegal rotation operation (%d, %d)\n", this.identifier, o.triangleOffset[j], triangles[j].ordinal());
                     }
                 }
             }
+            if(tmpId < id) id = tmpId;
         }
 
+        this.uniqueCubeId = id;
         this.triangles = (int) Arrays.stream(triangles).filter(triangle -> triangle != Triangle.None).count();
     }
 
-    private CachedCube(byte[][] data, Orientation orientation, int identifier, int triangles) {
+    private CachedCube(byte[][] data, Orientation orientation, int identifier, int triangles, int uniqueCubeId) {
         this.data = data;
         this.orientation = orientation;
         this.identifier = identifier;
         this.triangles = triangles;
+        this.uniqueCubeId = uniqueCubeId;
     }
 
     @Override
@@ -62,7 +72,7 @@ public class CachedCube implements ICube {
             return (CachedCube) super.clone();
         } catch (CloneNotSupportedException e) { // shouldn't happen
             System.err.println("Couldn't natively clone CachedCube: " + e.getLocalizedMessage());
-            return new CachedCube(this.data, this.orientation, this.identifier, this.triangles);
+            return new CachedCube(this.data, this.orientation, this.identifier, this.triangles, this. uniqueCubeId);
         }
     }
 
@@ -94,6 +104,11 @@ public class CachedCube implements ICube {
     @Override
     public int getNumTriangles() {
         return this.triangles;
+    }
+
+    @Override
+    public int getUniqueCubeId() {
+        return this.uniqueCubeId;
     }
 
     @Override
