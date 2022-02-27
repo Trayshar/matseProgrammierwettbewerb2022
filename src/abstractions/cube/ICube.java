@@ -54,6 +54,11 @@ public interface ICube extends Cloneable {
     int getNumTriangles();
 
     /**
+     * Returns a number unique for each cube no matter which rotation its in.
+     */
+    int getUniqueCubeId();
+
+    /**
      * Returns a List of all possible {@link Orientation}s this cube matches the filter in.
      * The resulting list may be empty.
      */
