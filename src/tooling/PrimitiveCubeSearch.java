@@ -16,10 +16,12 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 public class PrimitiveCubeSearch {
 
     public static void main(String[] args) {
+        generateFilterToTypeMapping();
         HashSet<Integer> ids = new HashSet<>();
 
         // For all cube types
@@ -67,6 +69,101 @@ public class PrimitiveCubeSearch {
             System.out.println("----------");
         }
         System.out.println(ids.stream().max(Integer::compareTo).get());
+    }
+
+    public static CubeType[][][][][][] generateFilterToTypeMapping() {
+        CubeType[][][][][][] types = new CubeType[2][2][2][2][2][2];
+        for (CubeType t : CubeType.values()) {
+            //System.out.println("Type " + t);
+            Orientation.stream().map(orientation -> {
+                Byte[] x = new Byte[6];
+                for (int i = 0; i < 6; i++) {
+                    x[orientation.side[i]] = (byte) t.predicate.getSide(ICube.Side.valueOf(i)).ordinal();
+                }
+                return Arrays.stream(x).collect(Collectors.toList());
+            }).distinct().forEach(bytes -> {
+                if(types[bytes.get(0) == 0 ? 0 : 1]
+                        [bytes.get(1) == 0 ? 0 : 1]
+                        [bytes.get(2) == 0 ? 0 : 1]
+                        [bytes.get(3) == 0 ? 0 : 1]
+                        [bytes.get(4) == 0 ? 0 : 1]
+                        [bytes.get(5) == 0 ? 0 : 1] != null) System.out.println("AHHHHHHHHH");
+
+                types[bytes.get(0) == 0 ? 0 : 1]
+                        [bytes.get(1) == 0 ? 0 : 1]
+                        [bytes.get(2) == 0 ? 0 : 1]
+                        [bytes.get(3) == 0 ? 0 : 1]
+                        [bytes.get(4) == 0 ? 0 : 1]
+                        [bytes.get(5) == 0 ? 0 : 1] = t;
+            });
+        }
+
+        System.out.println("{");
+        for (int i = 0; i < 2; i++) {
+            System.out.println(" {");
+            for (int j = 0; j < 2; j++) {
+                System.out.println("  {");
+                for (int k = 0; k < 2; k++) {
+                    System.out.println("   {");
+                    for (int l = 0; l < 2; l++) {
+                        System.out.println("    {");
+                        for (int m = 0; m < 2; m++) {
+                            System.out.println("     {");
+                            for (int n = 0; n < 2; n++) {
+                                System.out.println("      " + types[i][j][k][l][m][n] + ",");
+                            }
+                            System.out.println("     },");
+                        }
+                        System.out.println("    },");
+                    }
+                    System.out.println("   },");
+                }
+                System.out.println("  },");
+            }
+            System.out.println(" },");
+        }
+        System.out.println("};");
+
+        return types;
+    }
+
+    public static Double[][][] generateData() {
+        HashCubeSorter s = CubeSorterFactory.makeHashCubeSorter(new ICube[]{});
+
+        // For all cube types
+        for (CubeType t : CubeType.values()) {
+            // For all possible cubes of that type:
+            forAllPermutations(t.predicate, f -> {
+                if(s.unique(f) == 0) { // No cube for this.
+                    addCube(s, f);
+                }
+            });
+
+            for (Orientation o : Orientation.getValues()) {
+                ICubeFilter c = new ByteCubeFilter((ByteCubeFilter) t.predicate, o);
+                forAllPermutations(c, f -> {
+                    if(s.unique(f) != 1) { // Check that everyone does have exactly one result
+                        System.out.printf("Got more than one candidates for filter %s\n", f);
+                    }
+                });
+            }
+        }
+
+        ICube[] cubes = get(s);
+        int size = cubes.length;
+        Double[][][] data = new Double[size][24][6];
+        //System.out.println("CubeType " + t + " with " + s.getNumCachedQueries() + " permutations needs " + cubes.length + " unique cubes:");
+        for (int c = 0; c < size; c++) {
+            for (int o = 0; o < 24; o++) {
+                var tmp = cubes[c].getTriangles(Orientation.get(o));
+                for (int j = 0; j < 6; j++) {
+                    data[c][o][j] = (double) tmp[j];
+                }
+
+            }
+        }
+
+        return data;
     }
 
     private static int getUniqueID(ICube cube) {

@@ -9,7 +9,9 @@ import implementation.Puzzle;
 import implementation.cube.filter.ByteCubeFilter;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -22,11 +24,17 @@ public class ArrayCubeSorter implements ICubeSorter {
     private final ICube[] cache;
     private final QuerySet[] queries = new QuerySet[46656]; // 6^6
     /** Immutable */
-    private final ICube[] given;
+    private final EnumMap<CubeType, List<ICube>> given = new EnumMap<>(CubeType.class);
+    private final int cubeCount;
 
     protected ArrayCubeSorter(ICube[] cubes) {
-        this.given = cubes;
-        this.cache = new ICube[cubes.length*24];
+        for (ICube c : cubes) {
+            CubeType t = CubeType.get(c.getTriangles());
+            given.computeIfAbsent(t, k -> new ArrayList<>()).add(c);
+        }
+        int maxSize = given.values().stream().mapToInt(List::size).max().orElse(cubes.length);
+        this.cubeCount = cubes.length;
+        this.cache = new ICube[maxSize*24];
     }
 
     @Override
@@ -41,7 +49,15 @@ public class ArrayCubeSorter implements ICubeSorter {
         boolean hasDuplicates = false;
         ArrayList<QueryResult> results = new ArrayList<>();
         ArrayList<ICube> cubes = new ArrayList<>();
-        for (ICube cube : this.given) {
+        Iterable<ICube> cubeIterable = this.given.get(CubeType.get(filter.getTriangles()));
+        if (cubeIterable == null) {
+            System.out.println("Illegal request for cubes: " + filter);
+            QuerySet tmp = new QuerySet(new QueryResult[0], false);
+            this.queries[index] = tmp;
+            cachedQueries++;
+            return tmp;
+        }
+        for (ICube cube : cubeIterable) {
             for(Orientation o : cube.match(filter)) {
                 ICube c = cube.cloneCube();
                 c.setOrientation(o);
@@ -147,7 +163,7 @@ public class ArrayCubeSorter implements ICubeSorter {
 
     @Override
     public int getNumCubes() {
-        return this.given.length;
+        return this.cubeCount;
     }
 
     /** Wrapper for a single cube in all orientations it matches the query in */
