@@ -44,7 +44,7 @@ public class CachedCube implements ICube {
                     byte triangle  = (byte) (o.triangleOffset[j] + triangles[j].ordinal()); // Calculate the triangle on this side
                     if (triangle > 4) triangle -= 4; // Normalise it
                     data[i][o.side[j]] = triangle; // Set it
-                    tmpId += triangle * pow5[j]; // Apply the formula for ID calculation: sum(0 ≤ i < 6 ): side[i] * 5^i
+                    tmpId += triangle * pow5[o.side[j]]; // Apply the formula for ID calculation: sum(0 ≤ i < 6 ): side[i] * 5^i
                     if(Puzzle.DEBUG && data[i][o.side[j]] == 0) {
                         data[i][o.side[j]] = 1;
                         System.out.printf("[%s] Illegal rotation operation (%d, %d)\n", this.identifier, o.triangleOffset[j], triangles[j].ordinal());

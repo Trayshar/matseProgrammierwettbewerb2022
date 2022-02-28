@@ -21,7 +21,8 @@ import java.util.stream.Collectors;
 public class PrimitiveCubeSearch {
 
     public static void main(String[] args) {
-        generateFilterToTypeMapping();
+//        generateFilterToTypeMapping();
+//        System.exit(0);
         HashSet<Integer> ids = new HashSet<>();
 
         // For all cube types
@@ -38,7 +39,7 @@ public class PrimitiveCubeSearch {
             for (Orientation o : Orientation.getValues()) {
                 ICubeFilter c = new ByteCubeFilter((ByteCubeFilter) t.predicate, o);
                 forAllPermutations(c, f -> {
-                    if(s.unique(f) != 1) { // Check that everyone does have exactly one result
+                    if(s.unique(f) != 1) { // Check that everything does have exactly one result
                         System.out.printf("Got more than one candidates for filter %s\n", f);
                     }
                 });
@@ -47,19 +48,8 @@ public class PrimitiveCubeSearch {
             ICube[] cubes = get(s);
             System.out.println("CubeType " + t + " with " + s.getNumCachedQueries() + " permutations needs " + cubes.length + " unique cubes:");
             for (ICube c : cubes) {
-                Orientation orientation = null;
-                int id = getUniqueID(c);
-                for (Orientation o : Orientation.getValues()) {
-                    c.setOrientation(o);
-                    int nid = getUniqueID(c);
-                    if(nid < id) {
-                        id = nid;
-                        orientation = o;
-                        //System.out.printf("I'm feeling violated! %s with %d didnt match in %s (%d)\n", c, id, o, nid);
-                        //System.exit(-1);
-                    }
-                }
-                System.out.printf("[%d][%s] %s\n", id, orientation, c.serialize());
+                int id = c.getUniqueCubeId();
+                System.out.printf("[%d] %s\n", id, c.serialize());
                 if(ids.contains(id)) {
                     System.out.println("Violation! ID " + id + "already used!");
                     System.exit(-1);
@@ -67,8 +57,10 @@ public class PrimitiveCubeSearch {
                 ids.add(id);
             }
             System.out.println("----------");
+            System.out.println(ids.stream().min(Integer::compareTo).get() + "," + ids.stream().max(Integer::compareTo).get());
+            System.out.println("----------");
+            ids.clear();
         }
-        System.out.println(ids.stream().max(Integer::compareTo).get());
     }
 
     public static CubeType[][][][][][] generateFilterToTypeMapping() {
@@ -164,46 +156,6 @@ public class PrimitiveCubeSearch {
         }
 
         return data;
-    }
-
-    private static int getUniqueID(ICube cube) {
-        byte[] sides = cube.getTriangles();
-        return sides[0] +
-                sides[1] * 5 +
-                sides[2] * 25 +
-                sides[3] * 125 +
-                sides[4] * 625 +
-                sides[5] * 3125;
-    }
-
-    private static int getUniqueIDOld(ICube cube) {
-        byte[] tmp = cube.getTriangles();
-        int[] tmp2 = {
-                (getDifference(tmp[0] - tmp[1]) + getDifference(tmp[0] - tmp[2]) + getDifference(tmp[1] - tmp[2])),
-                (getDifference(tmp[0] - tmp[2]) + getDifference(tmp[0] - tmp[3]) + getDifference(tmp[2] - tmp[3])),
-                (getDifference(tmp[0] - tmp[3]) + getDifference(tmp[0] - tmp[4]) + getDifference(tmp[3] - tmp[4])),
-                (getDifference(tmp[0] - tmp[4]) + getDifference(tmp[0] - tmp[1]) + getDifference(tmp[4] - tmp[1])),
-                (getDifference(tmp[5] - tmp[1]) + getDifference(tmp[5] - tmp[2]) + getDifference(tmp[1] - tmp[2])),
-                (getDifference(tmp[5] - tmp[2]) + getDifference(tmp[5] - tmp[3]) + getDifference(tmp[2] - tmp[3])),
-                (getDifference(tmp[5] - tmp[3]) + getDifference(tmp[5] - tmp[4]) + getDifference(tmp[3] - tmp[4])),
-                (getDifference(tmp[5] - tmp[4]) + getDifference(tmp[5] - tmp[1]) + getDifference(tmp[4] - tmp[1]))
-        };
-        Arrays.sort(tmp2);
-        //System.out.print(Arrays.toString(tmp2));
-        int result = 0;
-        for (int i = 0; i < 8; i++) {
-            result += tmp2[i] << i*3;
-        }
-        return result;
-    }
-
-    private static int getDifference(int ab) {
-        if(ab < 0) {
-            return 4 + ab;
-        }else if(ab > 4) {
-            return ab - 4;
-        }
-        return ab;
     }
 
     private static final Triangle[] none = {Triangle.None};

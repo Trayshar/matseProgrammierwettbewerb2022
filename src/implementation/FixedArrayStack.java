@@ -4,6 +4,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
+import java.util.stream.Stream;
 
 /**
  * A messy Stack implementation using a fixed-size array. Indexing beyond that is unchecked and will throw a {@link IndexOutOfBoundsException}.
@@ -206,5 +207,9 @@ public class FixedArrayStack<T> implements Deque<T> {
     @Override
     public Iterator<T> descendingIterator() {
         throw new UnsupportedOperationException();
+    }
+
+    public Stream<T> stream() {
+        return Arrays.stream(this.data);
     }
 }

@@ -1,14 +1,17 @@
 package implementation.solver;
 
+import abstractions.cube.CubeType;
 import implementation.FixedArrayStack;
 import abstractions.IPuzzleSolution;
 import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.ICube;
-import abstractions.cube.ICubeSorter;
 import implementation.Puzzle;
+import implementation.cube.sorter.ArrayCubeSorter;
 import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
+
+import java.util.HashMap;
 
 public class StagedSolver implements IPuzzleSolver {
     /* Immutable */
@@ -18,27 +21,109 @@ public class StagedSolver implements IPuzzleSolver {
     private final DynamicPuzzleSolution solution;
     private final boolean[] usedIDs;
     private final boolean[][][] solved;
-    private final ICubeSorter sorter;
+    private final ArrayCubeSorter[][][] sorter;
     private int x = 0, y = 0, z = 0;
     private CubeIterator currentQuery;
     private final FixedArrayStack<Stage> stages;
     private long iter = 0L;
 
-    protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] cubes) {
+    /**
+     * Internal base constructor
+     */
+    private StagedSolver(int dimensionX, int dimensionY, int dimensionZ, int cubeLength) {
         this.dimensionX = dimensionX;
         this.dimensionY = dimensionY;
         this.dimensionZ = dimensionZ;
         this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
-        this.sorter = CubeSorterFactory.from(cubes);
-        this.usedIDs = new boolean[cubes.length + 1];
-        this.stages = new FixedArrayStack<>(new Stage[dimensionX*dimensionY*dimensionZ]);
+        this.sorter = new ArrayCubeSorter[dimensionX][dimensionY][dimensionZ];
+        this.usedIDs = new boolean[cubeLength + 1];
+        this.stages = new FixedArrayStack<>(new Stage[dimensionX * dimensionY * dimensionZ]);
         this.solved = new boolean[dimensionX][dimensionY][dimensionZ];
     }
 
-    private void prepare() throws PuzzleNotSolvableException {
-        SolverFactory.checkSolvable(dimensionX, dimensionY, dimensionZ, sorter);
+    /**
+     * Internal copy constructor
+     */
+    private StagedSolver(int dimensionX, int dimensionY, int dimensionZ, int cubeLength, ArrayCubeSorter[][][] sorter) {
+        this(dimensionX, dimensionY, dimensionZ, cubeLength);
 
-        this.currentQuery = new CubeIterator(this.sorter.matching(this.solution.getFilterAt(x, y, z)));
+        HashMap<ArrayCubeSorter, ArrayCubeSorter> oldToNew = new HashMap<>();
+        for (int x = 0; x < dimensionX; x++) {
+            for (int y = 0; y < dimensionY; y++) {
+                for (int z = 0; z < dimensionZ; z++) {
+                    this.sorter[x][y][z] = oldToNew.computeIfAbsent(sorter[x][y][z], ArrayCubeSorter::clone);
+                }
+            }
+        }
+    }
+
+    /**
+     * "Line" type
+     */
+    protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] oneC, ICube[] twoOppositeC) {
+        this(dimensionX, dimensionY, dimensionZ, oneC.length + twoOppositeC.length);
+
+        ArrayCubeSorter one = CubeSorterFactory.from(oneC, CubeType.One);
+        ArrayCubeSorter twoOpposite = CubeSorterFactory.from(twoOppositeC, CubeType.TwoOpposite);
+        for (int x = 0; x < dimensionX; x++) {
+            for (int y = 0; y < dimensionY; y++) {
+                for (int z = 0; z < dimensionZ; z++) {
+                    this.sorter[x][y][z] = CubeType.get(this.solution.getFilterAt(x,y,z).getTriangles()) == CubeType.One ? one : twoOpposite;
+                }
+            }
+        }
+    }
+
+    /**
+     * "Plane" type
+     */
+    protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] twoConnectedC, ICube[] threeConnectedC, ICube[] fourRoundC) {
+        this(dimensionX, dimensionY, dimensionZ, twoConnectedC.length + threeConnectedC.length + fourRoundC.length);
+
+        ArrayCubeSorter twoConnected = CubeSorterFactory.from(twoConnectedC, CubeType.TwoConnected);
+        ArrayCubeSorter threeConnected = CubeSorterFactory.from(threeConnectedC, CubeType.ThreeConnected);
+        ArrayCubeSorter fourRound = CubeSorterFactory.from(fourRoundC, CubeType.FourRound);
+
+        for (int x = 0; x < dimensionX; x++) {
+            for (int y = 0; y < dimensionY; y++) {
+                for (int z = 0; z < dimensionZ; z++) {
+                    switch (CubeType.get(this.solution.getFilterAt(x,y,z).getTriangles())) {
+                        case TwoConnected -> this.sorter[x][y][z] = twoConnected;
+                        case ThreeConnected -> this.sorter[x][y][z] = threeConnected;
+                        case FourRound -> this.sorter[x][y][z] = fourRound;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * "Cuboid" type
+     */
+    protected StagedSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] threeEdgeC, ICube[] fourConnectedC, ICube[] fiveC, ICube[] sixC) {
+        this(dimensionX, dimensionY, dimensionZ, threeEdgeC.length + fourConnectedC.length + fiveC.length + sixC.length);
+
+        ArrayCubeSorter threeEdge = CubeSorterFactory.from(threeEdgeC, CubeType.ThreeEdge);
+        ArrayCubeSorter fourConnected = CubeSorterFactory.from(fourConnectedC, CubeType.FourConnected);
+        ArrayCubeSorter five = CubeSorterFactory.from(fiveC, CubeType.Five);
+        ArrayCubeSorter six = CubeSorterFactory.from(sixC, CubeType.Six);
+
+        for (int x = 0; x < dimensionX; x++) {
+            for (int y = 0; y < dimensionY; y++) {
+                for (int z = 0; z < dimensionZ; z++) {
+                    switch (CubeType.get(this.solution.getFilterAt(x,y,z).getTriangles())) {
+                        case ThreeEdge -> this.sorter[x][y][z] = threeEdge;
+                        case FourConnected -> this.sorter[x][y][z] = fourConnected;
+                        case Five -> this.sorter[x][y][z] = five;
+                        case Six -> this.sorter[x][y][z] = six;
+                    }
+                }
+            }
+        }
+    }
+
+    public void prepare() throws PuzzleNotSolvableException {
+        this.currentQuery = new CubeIterator(this.sorter[0][0][0].matching(this.solution.getFilterAt(x, y, z)));
 
         System.out.printf("Starting at (0, 0, 0) with %d possibilities!\n", currentQuery.length());
         if(!currentQuery.hasNext()) throw new PuzzleNotSolvableException();
@@ -47,21 +132,15 @@ public class StagedSolver implements IPuzzleSolver {
 
     @Override
     public IPuzzleSolution solve() throws PuzzleNotSolvableException {
-        this.prepare();
-
         while(setNextCoords()) {
             solveInternally();
         }
-
-        this.done();
 
         return solution;
     }
 
     @Override
     public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
-        this.prepare();
-
         while(setNextCoords()) {
             if(Thread.currentThread().isInterrupted()) {
                 System.out.println("Got interrupted, exiting!");
@@ -70,22 +149,14 @@ public class StagedSolver implements IPuzzleSolver {
             solveInternally();
         }
 
-        this.done();
-
         return solution;
-    }
-
-    private void done() {
-        System.out.println("Done! Stats:");
-        System.out.printf("%d queries cached\n", this.sorter.getNumCachedQueries());
-        System.out.printf("Solver finished after %d iterations\n", iter);
     }
 
     private void solveInternally() throws PuzzleNotSolvableException {
         // x, y, z set here
         if(this.currentQuery == null) {
             this.currentQuery = new CubeIterator(
-                    this.sorter.matching(solution.getFilterAt(x, y, z), this::isFree));
+                    this.sorter[x][y][z].matching(solution.getFilterAt(x, y, z), this::isFree));
         }
         if(currentQuery.hasNext()) {
             this.set();
@@ -176,6 +247,11 @@ public class StagedSolver implements IPuzzleSolver {
         if(last != null) lastStr = " (" + last.results.index + "/" + last.results.length() + ")";
         return String.format("[%d] [%d,%d,%d] Stage %d%s%s",
                 iter, x, y, z, this.stages.size(), lastStr, zeroStr);
+    }
+
+    @Override
+    public IPuzzleSolver deepClone() {
+        throw new UnsupportedOperationException();
     }
 
     private record Stage(int x, int y, int z, CubeIterator results) {}

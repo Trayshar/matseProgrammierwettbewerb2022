@@ -1,7 +1,10 @@
 package implementation.cube.sorter;
 
+import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeSorter;
+
+import java.util.Arrays;
 
 public final class CubeSorterFactory {
 
@@ -15,6 +18,11 @@ public final class CubeSorterFactory {
     }
 
     public static ArrayCubeSorter makePrimitiveCubeSorter(ICube[] cubes) {
+        return new ArrayCubeSorter(cubes);
+    }
+
+    public static ArrayCubeSorter from(ICube[] cubes, CubeType t) {
+        System.out.println("Making sorter for " + t + ": " + Arrays.toString(cubes));
         return new ArrayCubeSorter(cubes);
     }
 }

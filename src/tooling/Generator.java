@@ -9,12 +9,16 @@ import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
 import implementation.cube.filter.CubeFilterFactory;
+import implementation.cube.sorter.ArrayCubeSorter;
+import implementation.cube.sorter.HashCubeSorter;
 import implementation.solver.SolverFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.lang.reflect.Array;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
@@ -192,9 +196,11 @@ public class Generator {
         IPuzzleSolution solution = null;
         try{
             //printMemoryStats();
+            clearArrayCubeSorterCache();
             System.out.println("--- Starting solver ---");
 
-            IPuzzleSolver s = SolverFactory.getSolver(dimX, dimY, dimZ, cubes);
+            IPuzzleSolver s = SolverFactory.of(dimX, dimY, dimZ, cubes);
+            s.prepare();
             observerHandle = observerExecutor.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
 
             long var3 = System.currentTimeMillis();
@@ -254,5 +260,11 @@ public class Generator {
         System.out.printf("Allocated: %04d Max:  %04d\n", instance.totalMemory() / 1048576L, instance.maxMemory() / 1048576L);
         System.out.printf("Used:      %04d Free: %04d\n", (instance.totalMemory() - instance.freeMemory()) / 1048576L, instance.freeMemory() / 1048576L);
         System.out.print ("--------------------------\n");
+    }
+
+    private static void clearArrayCubeSorterCache() {
+        for(int i = 0; i < 46656; i++) {
+            ArrayCubeSorter.queries[i] = null;
+        }
     }
 }
