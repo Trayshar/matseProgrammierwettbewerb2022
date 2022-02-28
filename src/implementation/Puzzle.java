@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit;
 public class Puzzle implements IPuzzle {
 	/** flag to control if this is run in debug mode. */
 	public static final boolean DEBUG = false;
-	public static final boolean LOG = true;
+	public static final boolean LOG = false;
 
 	private int dimensionX, dimensionY, dimensionZ;
 	private ICube[] cubes;
@@ -50,7 +50,8 @@ public class Puzzle implements IPuzzle {
 
 	public void solve() {
 		try {
-			IPuzzleSolver s = SolverFactory.getSolver(dimensionX, dimensionY, dimensionZ, cubes);
+			IPuzzleSolver s = SolverFactory.of(dimensionX, dimensionY, dimensionZ, cubes);
+			s.prepare();
 			if(Puzzle.LOG) {
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 				executorService.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);

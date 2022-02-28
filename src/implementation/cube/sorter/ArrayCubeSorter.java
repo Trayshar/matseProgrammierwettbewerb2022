@@ -9,9 +9,7 @@ import implementation.Puzzle;
 import implementation.cube.filter.ByteCubeFilter;
 
 import java.util.ArrayList;
-import java.util.EnumMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.function.Predicate;
 
 /**
@@ -21,20 +19,20 @@ import java.util.function.Predicate;
 public class ArrayCubeSorter implements ICubeSorter {
 
     private int cachedQueries = 0;
-    private final ICube[] cache;
-    private final QuerySet[] queries = new QuerySet[46656]; // 6^6
+    /**
+     * Internal cache for writes.
+     */
+    private ICube[] cache;
+    /**
+     * Since these queries are stateless no conflicting information is written. So no need to synchronize this thing. What could go wrong...
+     */
+    public static final QuerySet[] queries = new QuerySet[46656]; // 6^6
     /** Immutable */
-    private final EnumMap<CubeType, List<ICube>> given = new EnumMap<>(CubeType.class);
-    private final int cubeCount;
+    private final ICube[] given;
 
     protected ArrayCubeSorter(ICube[] cubes) {
-        for (ICube c : cubes) {
-            CubeType t = CubeType.get(c.getTriangles());
-            given.computeIfAbsent(t, k -> new ArrayList<>()).add(c);
-        }
-        int maxSize = given.values().stream().mapToInt(List::size).max().orElse(cubes.length);
-        this.cubeCount = cubes.length;
-        this.cache = new ICube[maxSize*24];
+        this.given = cubes;
+        this.cache = new ICube[given.length * 24];
     }
 
     @Override
@@ -49,15 +47,7 @@ public class ArrayCubeSorter implements ICubeSorter {
         boolean hasDuplicates = false;
         ArrayList<QueryResult> results = new ArrayList<>();
         ArrayList<ICube> cubes = new ArrayList<>();
-        Iterable<ICube> cubeIterable = this.given.get(CubeType.get(filter.getTriangles()));
-        if (cubeIterable == null) {
-            System.out.println("Illegal request for cubes: " + filter);
-            QuerySet tmp = new QuerySet(new QueryResult[0], false);
-            this.queries[index] = tmp;
-            cachedQueries++;
-            return tmp;
-        }
-        for (ICube cube : cubeIterable) {
+        for (ICube cube : this.given) {
             for(Orientation o : cube.match(filter)) {
                 ICube c = cube.cloneCube();
                 c.setOrientation(o);
@@ -72,7 +62,7 @@ public class ArrayCubeSorter implements ICubeSorter {
         }
 
         QuerySet tmp = new QuerySet(results.toArray(new QueryResult[0]), hasDuplicates);
-        this.queries[index] = tmp;
+        queries[index] = tmp;
         cachedQueries++;
         return tmp;
     }
@@ -81,29 +71,42 @@ public class ArrayCubeSorter implements ICubeSorter {
     public ICube[] matching(ICubeFilter matcher, Predicate<Integer> filter) {
         // Get current query
         int queryIndex = matcher.getUniqueId();
-        QuerySet query = this.queries[queryIndex];
+        QuerySet query = queries[queryIndex];
         if(query == null) query = this.cache(matcher, queryIndex);
 
-        int cacheIndex = 0;
         if(query.hasDuplicates) {
-            HashSet<Integer> usedUniqueIds = new HashSet<>();
-            for (QueryResult result : query.results) {
-                if(filter.test(result.id)) {
-                    if(!usedUniqueIds.add(result.uniqueCubeId)) {
-                        continue; // this cube is identical to one already returned; Skipping this cube
-                    }
-                    int length = result.cubes.length;
-                    System.arraycopy(result.cubes, 0, this.cache, cacheIndex, length);
-                    cacheIndex += length;
-                }
-            }
+            return matchingDuplicate(query, filter);
         }else{
-            for (QueryResult result : query.results) {
-                if(filter.test(result.id)) {
-                    int length = result.cubes.length;
-                    System.arraycopy(result.cubes, 0, this.cache, cacheIndex, length);
-                    cacheIndex += length;
+            return matchingSingle(query, filter);
+        }
+    }
+
+    private ICube[] matchingDuplicate(QuerySet query, Predicate<Integer> filter) {
+        int cacheIndex = 0;
+        HashSet<Integer> usedUniqueIds = new HashSet<>();
+        for (QueryResult result : query.results) {
+            if(filter.test(result.id)) {
+                if(!usedUniqueIds.add(result.uniqueCubeId)) {
+                    continue; // this cube is identical to one already returned; Skipping this cube
                 }
+                int length = result.cubes.length;
+                System.arraycopy(result.cubes, 0, this.cache, cacheIndex, length);
+                cacheIndex += length;
+            }
+        }
+
+        ICube[] result = new ICube[cacheIndex];
+        System.arraycopy(this.cache, 0, result, 0, cacheIndex);
+        return result;
+    }
+
+    private ICube[] matchingSingle(QuerySet query, Predicate<Integer> filter) {
+        int cacheIndex = 0;
+        for (QueryResult result : query.results) {
+            if(filter.test(result.id)) {
+                int length = result.cubes.length;
+                System.arraycopy(result.cubes, 0, this.cache, cacheIndex, length);
+                cacheIndex += length;
             }
         }
 
@@ -115,7 +118,7 @@ public class ArrayCubeSorter implements ICubeSorter {
     @Override
     public int count(ICubeFilter matcher, Predicate<Integer> filter) {
         int index = matcher.getUniqueId();
-        QuerySet query = this.queries[index];
+        QuerySet query = queries[index];
         if(query == null) query = this.cache(matcher, index);
 
         int count = 0;
@@ -131,7 +134,7 @@ public class ArrayCubeSorter implements ICubeSorter {
     @Override
     public int unique(ICubeFilter f) {
         int index = f.getUniqueId();
-        QuerySet query = this.queries[index];
+        QuerySet query = queries[index];
         if(query == null) query = this.cache(f, index);
 
         return query.results.length;
@@ -140,7 +143,7 @@ public class ArrayCubeSorter implements ICubeSorter {
     @Override
     public int unique(CubeType type) {
         int index = type.predicate.getUniqueId();
-        QuerySet query = this.queries[index];
+        QuerySet query = queries[index];
         if(query == null) query = this.cache(type.predicate, index);
 
         if(Puzzle.DEBUG) {
@@ -163,7 +166,17 @@ public class ArrayCubeSorter implements ICubeSorter {
 
     @Override
     public int getNumCubes() {
-        return this.cubeCount;
+        return this.given.length;
+    }
+
+    public ArrayCubeSorter clone() {
+        try {
+            ArrayCubeSorter clone = (ArrayCubeSorter) super.clone();
+            clone.cache = new ICube[given.length * 24];
+            return clone;
+        } catch (CloneNotSupportedException e) { // Should not happen.
+            throw new UnsupportedOperationException(e);
+        }
     }
 
     /** Wrapper for a single cube in all orientations it matches the query in */

@@ -4,6 +4,12 @@ import java.util.concurrent.Callable;
 
 public interface IPuzzleSolver extends Callable<IPuzzleSolution>, Runnable {
     /**
+     * Sets up the solver. Must be called before cloning if multiple solvers are to be run in parallel.
+     * @throws PuzzleNotSolvableException If no solution could be found
+     */
+    void prepare() throws PuzzleNotSolvableException;
+
+    /**
      * Solves the puzzle on the calling thread, Returning the solution once it's available
      * @throws PuzzleNotSolvableException If no solution could be found
      */
@@ -20,6 +26,12 @@ public interface IPuzzleSolver extends Callable<IPuzzleSolution>, Runnable {
      * Must handle interrupts.
      */
     String getCurrentStatus();
+
+    /**
+     * Performs a deep clone of this solver, so that this solver and its clone
+     * may run in parallel without interfering with each other.
+     */
+    IPuzzleSolver deepClone();
 
     /**
      * Concurrently solve the puzzle.
