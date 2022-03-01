@@ -5,7 +5,7 @@ import abstractions.Orientation;
 import java.util.ArrayList;
 
 /**
- * Represents a single cube with 6 sides, each having one triangle (or not)
+ * Represents a single cube with 6 sides, each having one triangle (or lack thereof)
  */
 public interface ICube extends Cloneable {
 
@@ -64,8 +64,14 @@ public interface ICube extends Cloneable {
      */
     ArrayList<Orientation> match(ICubeFilter filter);
 
+    /**
+     * Returns the raw data of this cube. Do not modify the returned value.
+     */
     byte[] getTriangles();
 
+    /**
+     * Returns the raw data of this cube. Do not modify the returned value.
+     */
     byte[] getTriangles(Orientation o);
 
     /**
@@ -109,14 +115,14 @@ public interface ICube extends Cloneable {
         private static final Side[] values = values();
 
         /**
-         * Faster brother of Enum.values(). DO NOT MODIFY THE VALUES RETURNED
+         * Faster brother of Enum.values(). DO NOT MODIFY THE RETURNED VALUE
          */
         public static Side[] getValues() {
             return values;
         }
 
         /**
-         * Returns the side for the given ordinal. DO NOT MODIFY THE VALUE RETURNED
+         * Returns the side for the given ordinal.
          */
         public static Side valueOf(int ordinal) {
             assert ordinal >= 0 && ordinal < values.length;
