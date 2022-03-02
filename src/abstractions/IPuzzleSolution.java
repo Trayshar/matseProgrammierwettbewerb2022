@@ -56,6 +56,30 @@ public interface IPuzzleSolution {
      */
     ICubeFilter getFilterAt(int x, int y, int z);
 
+    /**
+     * Set the cube at the specific position
+     * @throws IllegalStateException If the given cube does not fit
+     * @return The cube that was at this position before, or null
+     */
+    default ICube set(Coordinate c, ICube cube) {
+        return this.set(c.x(), c.y(), c.z(), cube);
+    }
+
+    /**
+     * Returns the solution at the given point; May return null.
+     */
+    default ICube getSolutionAt(Coordinate c) {
+        return this.getSolutionAt(c.x(), c.y(), c.z());
+    }
+
+    /**
+     * Returns the requirements to the cube at the given position;
+     * No guarantees are made for the returned value if a solution for the given position already exists.
+     */
+    default ICubeFilter getFilterAt(Coordinate c) {
+        return this.getFilterAt(c.x(), c.y(), c.z());
+    }
+
     int getDimensionX();
 
     int getDimensionY();

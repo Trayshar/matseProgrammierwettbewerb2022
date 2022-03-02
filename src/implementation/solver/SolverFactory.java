@@ -59,7 +59,7 @@ public final class SolverFactory {
      * Returns the mold for a solution of type "Cuboid", meaning all dimensions are greater than 1.
      */
     private static IPuzzleSolver cuboid(int dimX, int dimY, int dimZ, ICube[] threeEdge, ICube[] fourConnected, ICube[] five, ICube[] six) {
-        return new StagedSolver(dimX, dimY, dimZ, threeEdge, fourConnected, five, six);
+        return new TreeSolver(dimX, dimY, dimZ, threeEdge, fourConnected, five, six);
     }
 
     /**
