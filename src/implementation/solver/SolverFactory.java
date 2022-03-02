@@ -5,6 +5,7 @@ import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
+import implementation.LinearCoordinateGenerator;
 import implementation.solution.DynamicPuzzleSolution;
 
 public final class SolverFactory {
@@ -59,19 +60,15 @@ public final class SolverFactory {
      * Returns the mold for a solution of type "Cuboid", meaning all dimensions are greater than 1.
      */
     private static IPuzzleSolver cuboid(int dimX, int dimY, int dimZ, ICube[] threeEdge, ICube[] fourConnected, ICube[] five, ICube[] six) {
-        return new TreeSolver(dimX, dimY, dimZ, threeEdge, fourConnected, five, six);
+        return new TreeSolver(dimX, dimY, dimZ, threeEdge, fourConnected, five, six, new LinearCoordinateGenerator(dimX, dimY, dimZ));
     }
 
     /**
      * Checks whether a cube solution with the given dimensions is possible with the given cubes.
      * Throws a PuzzleNotSolvableException if not.
      */
-    public static IPuzzleSolver of(final int dimensionX, final int dimensionY, final int dimensionZ, ICube[] cubes) throws PuzzleNotSolvableException {
-        if(dimensionX * dimensionY * dimensionZ != cubes.length) throw new PuzzleNotSolvableException("Expected number of cubes doesn't match given number");
-
-        int dimX = dimensionX;
-        int dimY = dimensionY;
-        int dimZ = dimensionZ;
+    public static IPuzzleSolver of(int dimX, int dimY, int dimZ, ICube[] cubes) throws PuzzleNotSolvableException {
+        if(dimX * dimY * dimZ != cubes.length) throw new PuzzleNotSolvableException("Expected number of cubes doesn't match given number");
 
         // Sort X, Y and Z so that X ≥ Y ≥ Z
         if (dimZ > dimY) {
@@ -121,7 +118,7 @@ public final class SolverFactory {
                             default -> throw new PuzzleNotSolvableException("Unexpected cube type!");
                         }
                     }
-                    return line(dimensionX, dimensionY, dimensionZ, cubes);
+                    return line(dimX, dimY, dimZ, cubes);
                 }
             } else { // x, y ≥ 3, z = 1
                 // + -- + -- + ... + -- + -- +
@@ -168,7 +165,7 @@ public final class SolverFactory {
                         default -> throw new PuzzleNotSolvableException("Unexpected cube type!");
                     }
                 }
-                return plane(dimensionX, dimensionY, dimensionZ, twoConnected, threeConnected, fourRound);
+                return plane(dimX, dimY, dimZ, twoConnected, threeConnected, fourRound);
             }
         } else {// x, y, z ≥ 2
             // + -- + -- + ... + -- + -- +    + -- + -- + ... + -- + -- +    + -- + -- + ... + -- + -- +
@@ -229,7 +226,7 @@ public final class SolverFactory {
                     default -> throw new PuzzleNotSolvableException("Unexpected cube type!");
                 }
             }
-            return cuboid(dimensionX, dimensionY, dimensionZ, threeEdge, fourConnected, five, six);
+            return cuboid(dimX, dimY, dimZ, threeEdge, fourConnected, five, six);
         }
     }
 }
