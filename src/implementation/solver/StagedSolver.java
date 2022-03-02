@@ -168,8 +168,6 @@ public class StagedSolver implements IPuzzleSolver {
         iter++;
     }
 
-    private int sols = 0;
-
     /**
      * Goes in x direction till the end, then y, then z.
      */
@@ -188,8 +186,7 @@ public class StagedSolver implements IPuzzleSolver {
             return true;
         }
 
-        System.out.printf("- Found solution %d -\n", sols++);
-        return Puzzle.DEBUG; // Only returns the first solution if DEBUG is false; Look for other solutions otherwise
+        return false;
     }
 
     private boolean validX(int val) {

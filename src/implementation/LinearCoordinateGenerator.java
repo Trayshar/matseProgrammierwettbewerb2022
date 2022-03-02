@@ -1,4 +1,4 @@
-package implementation.solver;
+package implementation;
 
 import abstractions.Coordinate;
 import abstractions.CoordinateGenerator;
@@ -23,21 +23,6 @@ public class LinearCoordinateGenerator extends CoordinateGenerator {
                 }
             }
         }
-
-//        int x = 0, y = 0, z = 0;
-//        for (int i = 0; i < coords.length; i++) {
-//            if(validX(x + 1)) {
-//                x++;
-//            }else if(validY(y + 1)) {
-//                x = 0;
-//                y++;
-//            }else if(validZ(z + 1)) {
-//                x = 0;
-//                y = 0;
-//                z++;
-//            }
-//            coords[i] = new Coordinate(x, y, z);
-//        }
         return coords;
     }
 }

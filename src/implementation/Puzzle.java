@@ -74,7 +74,9 @@ public class Puzzle implements IPuzzle {
 			solvers.add(s.deepClone());
 			solvers.add(s.deepClone());
 			try {
-				return executorService.invokeAny(solvers);
+				var tmp = executorService.invokeAny(solvers);
+				executorService.shutdownNow();
+				return tmp;
 			} catch (InterruptedException | ExecutionException e) {
 				throw new PuzzleNotSolvableException("Caught exception ", e);
 			}

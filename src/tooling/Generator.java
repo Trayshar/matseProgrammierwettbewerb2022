@@ -199,7 +199,6 @@ public class Generator {
 
             IPuzzleSolver s = SolverFactory.of(dimX, dimY, dimZ, cubes);
             s.prepare();
-            observerHandle = observerExecutor.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
 
             long var3 = System.currentTimeMillis();
             if(s.canRunConcurrent()) {
@@ -208,8 +207,14 @@ public class Generator {
                 solvers.add(s.deepClone());
                 solvers.add(s.deepClone());
                 solvers.add(s.deepClone());
+                observerHandle = observerExecutor.scheduleAtFixedRate(() -> {
+                    for (int i = 0; i < 4; i++) {
+                        System.out.println("[T" + i + "] " + solvers.get(i).getCurrentStatus());
+                    }
+                }, 1, 1, TimeUnit.SECONDS);
                 solution = solverExecutor.invokeAny(solvers, timeout, TimeUnit.SECONDS);
             }else {
+                observerHandle = observerExecutor.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
                 solverHandle = solverExecutor.submit((Callable<IPuzzleSolution>) s);
                 solution = solverHandle.get(timeout, TimeUnit.SECONDS);
             }
