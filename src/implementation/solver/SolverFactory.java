@@ -10,7 +10,7 @@ import implementation.solution.DynamicPuzzleSolution;
 
 public final class SolverFactory {
     /**
-     * Returns the mold for a solution of type "Zero", meaning all side lengths are 1 and the only cube has no triangles.
+     * Returns the solver for a solution of type "Zero", meaning all side lengths are 1 and the only cube has no triangles.
      */
     private static IPuzzleSolver zero(ICube cube) {
         IPuzzleSolution s = new DynamicPuzzleSolution(1,1 ,1);
@@ -43,29 +43,29 @@ public final class SolverFactory {
     }
 
     /**
-     * Returns the mold for a solution of type "Line", meaning all but one dimensions are 1.
+     * Returns the solver for a solution of type "Line", meaning all but one dimensions are 1.
      */
     private static IPuzzleSolver line(int dimX, int dimY, int dimZ, ICube[] cubes) {
         return new SimpleSolver(dimX, dimY, dimZ, cubes);
     }
 
     /**
-     * Returns the mold for a solution of type "Plane", meaning one dimension is 1 and the other two are greater than 1.
+     * Returns the solver for a solution of type "Plane", meaning one dimension is 1 and the other two are greater than 1.
      */
     private static IPuzzleSolver plane(int dimX, int dimY, int dimZ, ICube[] twoConnected, ICube[] threeConnected, ICube[] fourRound) {
         return new StagedSolver(dimX, dimY, dimZ, twoConnected, threeConnected, fourRound);
     }
 
     /**
-     * Returns the mold for a solution of type "Cuboid", meaning all dimensions are greater than 1.
+     * Returns the solver for a solution of type "Cuboid", meaning all dimensions are greater than 1.
      */
     private static IPuzzleSolver cuboid(int dimX, int dimY, int dimZ, ICube[] threeEdge, ICube[] fourConnected, ICube[] five, ICube[] six) {
         return new TreeSolver(dimX, dimY, dimZ, threeEdge, fourConnected, five, six, new LinearCoordinateGenerator(dimX, dimY, dimZ));
     }
 
     /**
-     * Checks whether a cube solution with the given dimensions is possible with the given cubes.
-     * Throws a PuzzleNotSolvableException if not.
+     * Returns the matching solver for teh problem...
+     * Throws a PuzzleNotSolvableException if the given data has no solutions by design (missing cubes).
      */
     public static IPuzzleSolver of(int dimX, int dimY, int dimZ, ICube[] cubes) throws PuzzleNotSolvableException {
         if(dimX * dimY * dimZ != cubes.length) throw new PuzzleNotSolvableException("Expected number of cubes doesn't match given number");

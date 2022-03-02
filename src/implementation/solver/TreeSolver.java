@@ -3,11 +3,15 @@ package implementation.solver;
 import abstractions.*;
 import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
+import abstractions.cube.Triangle;
 import implementation.Puzzle;
 import implementation.cube.sorter.ArrayCubeSorter;
 import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
 
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.ConcurrentModificationException;
 import java.util.EnumMap;
 
 public class TreeSolver implements IPuzzleSolver {
@@ -15,6 +19,7 @@ public class TreeSolver implements IPuzzleSolver {
     public final int dimensionX, dimensionY, dimensionZ;
     /* Immutable, indexed by tree height */
     private final Coordinate[] coords;
+    private final boolean enableLookAhead = false;
 
     /* Immutable, only change are queries getting cached. Indexed by tree height. */
     private final ArrayCubeSorter[] sorter;
@@ -118,7 +123,26 @@ public class TreeSolver implements IPuzzleSolver {
 
     public void expandCurrentNode() {
         if(this.node.isBeingPopulated()) {
-            this.node.populate(this.sorter[this.node.getHeight() + 1].matching(this.solution.getFilterAt(this.coords[this.node.getHeight() + 1]), this::isFree));
+            int childHeight = this.node.getHeight() + 1;
+            ICube[] cubes = this.sorter[childHeight].matching(this.solution.getFilterAt(this.coords[childHeight]), this::isFree);
+
+            if(enableLookAhead && childHeight + 1 < this.coords.length && cubes.length > 3) { // Lookahead to sort child notes
+                ICube.Side side = this.coords[childHeight + 1].adjacentTo(this.coords[childHeight]); // Side of "childHeight" that looks at "childHeight + 1"
+                if(side != null) {
+                    var sort = this.sorter[childHeight + 1];
+                    var filter = this.solution.getFilterAt(this.coords[childHeight + 1]).cloneFilter();
+                    var opposite = side.getOpposite();
+                    boolean isVertical = side.z != 0;
+                    int[] comp = new int[4]; // Maps the triangle a cube has on side "side" to the amount of potential next candidates
+                    for (int i = 0; i < 4; i++) {
+                        filter.setSide(opposite, Triangle.valueOf(i+1).getMatching(isVertical));
+                        comp[i] = sort.count(filter);
+                    }
+
+                    Arrays.sort(cubes, Comparator.<ICube>comparingInt(c -> comp[c.getTriangle(side).ordinal() - 1]).reversed());
+                }
+            }
+            this.node.populate(cubes);
         }
     }
 
@@ -127,11 +151,12 @@ public class TreeSolver implements IPuzzleSolver {
      */
     public void setNextNode() throws PuzzleNotSolvableException {
         TreeNode nextNode = this.node.getNext();
-        if(nextNode == null) { // Either this node is empty, or all children are already being process by another thread. Backtracking it is.
+        if(nextNode == null) { // Either this node is empty, or all children are already being process by another thread
             this.undo();
             this.setNextNode();
         }
         else {
+            if(Puzzle.DEBUG && nextNode.isDead()) throw new ConcurrentModificationException();
             this.node = nextNode;
             this.solution.set(this.coords[this.node.getHeight()], this.node.getCube());
             this.usedIDs[this.node.getCube().getIdentifier()] = true;
@@ -280,7 +305,7 @@ public class TreeSolver implements IPuzzleSolver {
         public synchronized void validate() {
             if (this.children == null) return;
             for (TreeNode n : this.children) {
-                synchronized (n) {
+                synchronized (n) { //TODO: Potentially useless lock
                     if (!n.isDead()) return;
                 }
             }
