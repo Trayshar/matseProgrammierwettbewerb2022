@@ -12,10 +12,9 @@ import mdw2021.IPuzzle;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 public class Puzzle implements IPuzzle {
 	/** flag to control if this is run in debug mode. */
@@ -51,19 +50,36 @@ public class Puzzle implements IPuzzle {
 	public void solve() {
 		try {
 			IPuzzleSolver s = SolverFactory.of(dimensionX, dimensionY, dimensionZ, cubes);
-			s.prepare();
 			if(Puzzle.LOG) {
 				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
 				executorService.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
-				this.solution = s.solve();
+				this.solution = solve(s);
 				executorService.shutdownNow();
 			}else {
-				this.solution = s.solve();
+				this.solution = solve(s);
 			}
 		} catch (PuzzleNotSolvableException e) {
 			e.printStackTrace();
 			this.solution = null;
 		}
+	}
+
+	private IPuzzleSolution solve(IPuzzleSolver s) throws PuzzleNotSolvableException {
+		s.prepare();
+		if(s.canRunConcurrent()) {
+			ExecutorService executorService = Executors.newFixedThreadPool(4);
+			List<IPuzzleSolver> solvers = new ArrayList<>(4);
+			solvers.add(s);
+			solvers.add(s.deepClone());
+			solvers.add(s.deepClone());
+			solvers.add(s.deepClone());
+			try {
+				return executorService.invokeAny(solvers);
+			} catch (InterruptedException | ExecutionException e) {
+				throw new PuzzleNotSolvableException("Caught exception ", e);
+			}
+		}
+		return s.solve();
 	}
 
 	public boolean hasSolution() {

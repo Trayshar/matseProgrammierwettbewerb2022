@@ -23,9 +23,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Random;
+import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
@@ -185,7 +183,7 @@ public class Generator {
     }
 
     private static final ScheduledExecutorService observerExecutor = Executors.newSingleThreadScheduledExecutor();
-    private static final ExecutorService solverExecutor = Executors.newSingleThreadExecutor();
+    private static final ExecutorService solverExecutor = Executors.newFixedThreadPool(4);
 
     public static double doTesting(int dimX, int dimY, int dimZ, boolean shuffle, boolean rotate, int timeout) {
         System.out.printf("Generating puzzle: [%d, %d, %d] %s %s\n", dimX, dimY, dimZ, shuffle ? "shuffled" : "", rotate ? "rotated" : "");
@@ -204,8 +202,17 @@ public class Generator {
             observerHandle = observerExecutor.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
 
             long var3 = System.currentTimeMillis();
-            solverHandle = solverExecutor.submit((Callable<IPuzzleSolution>) s);
-            solution = solverHandle.get(timeout, TimeUnit.SECONDS);
+            if(s.canRunConcurrent()) {
+                List<IPuzzleSolver> solvers = new ArrayList<>();
+                solvers.add(s);
+                solvers.add(s.deepClone());
+                solvers.add(s.deepClone());
+                solvers.add(s.deepClone());
+                solution = solverExecutor.invokeAny(solvers, timeout, TimeUnit.SECONDS);
+            }else {
+                solverHandle = solverExecutor.submit((Callable<IPuzzleSolution>) s);
+                solution = solverHandle.get(timeout, TimeUnit.SECONDS);
+            }
             long var5 = System.currentTimeMillis();
 
             double time = (double)(var5 - var3) / 1000.0D;

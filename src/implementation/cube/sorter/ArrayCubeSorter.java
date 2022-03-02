@@ -16,7 +16,7 @@ import java.util.function.Predicate;
  * A cube sorter using one huge array for indexing and with duplicate detection. Use only for larger puzzles,
  * otherwise the time spent allocating and null-ing the array will take longer than solving it.
  */
-public class ArrayCubeSorter implements ICubeSorter {
+public class ArrayCubeSorter implements ICubeSorter, Cloneable {
 
     private int cachedQueries = 0;
     /**
