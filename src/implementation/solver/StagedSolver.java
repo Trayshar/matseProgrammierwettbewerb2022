@@ -251,12 +251,22 @@ public class StagedSolver implements IPuzzleSolver {
 
     @Override
     public IPuzzleSolver deepClone() {
-        throw new UnsupportedOperationException();
+        StagedSolver s = new StagedSolver(dimensionX, dimensionY, dimensionZ, usedIDs.length-1, this.sorter);
+        for (Stage stage : this.stages) {
+            stage.clone();
+            s.stages.addLast(stage.clone());
+        }
+        return s;
     }
 
-    private record Stage(int x, int y, int z, CubeIterator results) {}
+    private record Stage(int x, int y, int z, CubeIterator results) implements Cloneable {
+        @Override
+        public Stage clone() {
+            return new Stage(x, y, z, results.clone());
+        }
+    }
 
-    private static class CubeIterator {
+    private static class CubeIterator implements Cloneable{
         private final ICube[] cubes;
         private int index = 0;
 
@@ -274,6 +284,15 @@ public class StagedSolver implements IPuzzleSolver {
 
         public ICube next() {
             return cubes[index++];
+        }
+
+        @Override
+        public CubeIterator clone() {
+            try {
+                return (CubeIterator) super.clone();
+            } catch (CloneNotSupportedException e) {
+                throw new AssertionError();
+            }
         }
     }
 }

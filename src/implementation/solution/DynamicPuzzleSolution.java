@@ -84,9 +84,14 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         return tmp;
     }
 
+    /**
+     * Returns -1 if no operation to undo exists.
+     * Returns 0 if the last operation had been undone, but no cube has been freed
+     * Returns the id of the cube that has been freed otherwise.
+     */
     public int undo() {
         SetOperation op = this.operations.removeLast();
-        //if (op == null) return -1; // Will never happen
+        if (op == null) return -1; // Will never happen
         int x = op.x, y = op.y, z = op.z;
 
         // Resetting filters

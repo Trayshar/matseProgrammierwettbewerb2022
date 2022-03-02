@@ -22,7 +22,6 @@ public final class CubeSorterFactory {
     }
 
     public static ArrayCubeSorter from(ICube[] cubes, CubeType t) {
-        System.out.println("Making sorter for " + t + ": " + Arrays.toString(cubes));
         return new ArrayCubeSorter(cubes);
     }
 }

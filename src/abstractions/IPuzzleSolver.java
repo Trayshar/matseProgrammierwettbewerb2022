@@ -33,6 +33,10 @@ public interface IPuzzleSolver extends Callable<IPuzzleSolution>, Runnable {
      */
     IPuzzleSolver deepClone();
 
+    default boolean canRunConcurrent() {
+        return false;
+    }
+
     /**
      * Concurrently solve the puzzle.
      */
