@@ -143,7 +143,7 @@ public class StagedSolver implements IPuzzleSolver {
     public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
         while(setNextCoords()) {
             if(Thread.currentThread().isInterrupted()) {
-                System.out.println("Got interrupted, exiting!");
+                if(Puzzle.LOG) System.out.println("Got interrupted, exiting!");
                 return null;
             }
             solveInternally();
