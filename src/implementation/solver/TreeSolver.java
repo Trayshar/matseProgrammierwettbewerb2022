@@ -111,7 +111,7 @@ public class TreeSolver implements IPuzzleSolver {
         int maxHeight = this.coords.length - 1;
         do {
             if(Thread.interrupted()) {
-                System.out.println("Got interrupted, exiting!");
+                if(Puzzle.LOG) System.out.println("Got interrupted, exiting!");
                 return null;
             }
             expandCurrentNode();
