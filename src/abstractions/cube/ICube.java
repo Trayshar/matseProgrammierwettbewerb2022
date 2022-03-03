@@ -129,5 +129,15 @@ public interface ICube extends Cloneable {
 
             return values[ordinal];
         }
+
+        public static Side getByDirection(int dx, int dy, int dz) {
+            if(dx == 0 && dy == 0 && dz == 1) return Up;
+            if(dx == 0 && dy == -1 && dz == 0) return Left;
+            if(dx == 1 && dy == 0 && dz == 0) return Front;
+            if(dx == 0 && dy == 1 && dz == 0) return Right;
+            if(dx == -1 && dy == 0 && dz == 0) return Back;
+            if(dx == 0 && dy == 0 && dz == -1) return Down;
+            return null;
+        }
     }
 }

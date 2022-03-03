@@ -15,6 +15,7 @@ import java.util.Arrays;
 public class CachedCube implements ICube {
     /** IMMUTABLE */
     private final byte[][] data;
+    /** Mutable orientation of this particular cube instance */
     private Orientation orientation = Orientation.Alpha;
     /** The unique number of this cube */
     public final int identifier;
