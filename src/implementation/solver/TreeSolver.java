@@ -151,14 +151,15 @@ public class TreeSolver implements IPuzzleSolver {
      */
     public void setNextNode() throws PuzzleNotSolvableException {
         TreeNode nextNode = this.node.getNext();
-        if(nextNode == null) { // Either this node is empty, or all children are already being process by another thread
+        if(nextNode == null) { // Either this node is empty, or all children are already being processed by another thread
             this.undo();
             this.setNextNode();
         }
         else {
             if(Puzzle.DEBUG && nextNode.isDead()) throw new ConcurrentModificationException();
             this.node = nextNode;
-            this.solution.set(this.coords[this.node.getHeight()], this.node.getCube());
+            ICube tmp = this.solution.set(this.coords[this.node.getHeight()], this.node.getCube());
+            if(Puzzle.DEBUG && tmp != null) throw new IllegalStateException();
             this.usedIDs[this.node.getCube().getIdentifier()] = true;
         }
     }

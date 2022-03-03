@@ -8,8 +8,6 @@ import abstractions.cube.ICubeSorter;
 import implementation.Puzzle;
 import implementation.cube.filter.ByteCubeFilter;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.function.Predicate;
 
 /**
@@ -19,10 +17,12 @@ import java.util.function.Predicate;
 public class ArrayCubeSorter implements ICubeSorter, Cloneable {
 
     private int cachedQueries = 0;
-    /**
-     * Internal cache for writes.
+    /*
+     * Internal caches for writes. Not to be synchronized. Java doesn't have "Zero Cost Abstractions" , so we have to stick to simple data structures like arrays.
      */
-    private ICube[] cache;
+    private ICube[] cubeCache;
+    private int[] idCache;
+    private QueryResult[] resultCache;
     /**
      * Since these queries are stateless no conflicting information is written. So no need to synchronize this thing. What could go wrong...
      */
@@ -32,7 +32,9 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
 
     protected ArrayCubeSorter(ICube[] cubes) {
         this.given = cubes;
-        this.cache = new ICube[given.length * 24];
+        this.cubeCache = new ICube[given.length * 24];
+        this.idCache = new int[given.length];
+        this.resultCache = new QueryResult[given.length];
     }
 
     @Override
@@ -40,28 +42,48 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
         this.cache(filter, filter.getUniqueId());
     }
 
+    /**
+     * Looks inside the idCache from index 0 to "idCacheLength"-1 for the id "idToCheck".
+     * If it is found true is returned.
+     */
+    private boolean checkIfIdIsAlreadyUsed(int idCacheLength, int idToCheck) {
+        for (int i = 0; i < idCacheLength; i++) {
+            if(idCache[i] == idToCheck) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private QuerySet cache(ICubeFilter filter, int index) {
         assert filter.getUniqueId() == index;
 
-        HashSet<Integer> usedUniqueIds = new HashSet<>();
         boolean hasDuplicates = false;
-        ArrayList<QueryResult> results = new ArrayList<>();
-        ArrayList<ICube> cubes = new ArrayList<>();
+        int cubeCacheIndex = 0, resultCacheIndex = 0, idCacheIndex = 0;
         for (ICube cube : this.given) {
             for(Orientation o : cube.match(filter)) {
                 ICube c = cube.cloneCube();
                 c.setOrientation(o);
-                cubes.add(c);
+                cubeCache[cubeCacheIndex++] = c;
             }
 
-            if(!cubes.isEmpty()) {
-                hasDuplicates |= usedUniqueIds.add(cube.getUniqueCubeId());
-                results.add(new QueryResult(cube.getIdentifier(), cube.getUniqueCubeId(), cubes.toArray(new ICube[0])));
+            if(cubeCacheIndex > 0) {
+                int idToCheck = cube.getUniqueCubeId();
+                if(checkIfIdIsAlreadyUsed(idCacheIndex, idToCheck)) {
+                    hasDuplicates = true;
+                }else {
+                    idCache[idCacheIndex++] = idToCheck;
+                }
+                ICube[] resultCubes = new ICube[cubeCacheIndex];
+                System.arraycopy(cubeCache, 0, resultCubes, 0, cubeCacheIndex);
+                resultCache[resultCacheIndex++] = new QueryResult(cube.getIdentifier(), idToCheck, resultCubes);
             }
-            cubes.clear();
+            cubeCacheIndex = 0;
         }
 
-        QuerySet tmp = new QuerySet(results.toArray(new QueryResult[0]), hasDuplicates);
+        QueryResult[] results = new QueryResult[resultCacheIndex];
+        System.arraycopy(resultCache, 0, results, 0, resultCacheIndex);
+        QuerySet tmp = new QuerySet(results, hasDuplicates);
         queries[index] = tmp;
         cachedQueries++;
         return tmp;
@@ -82,21 +104,23 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
     }
 
     private ICube[] matchingDuplicate(QuerySet query, Predicate<Integer> filter) {
-        int cacheIndex = 0;
-        HashSet<Integer> usedUniqueIds = new HashSet<>();
+        int cubeCacheIndex = 0, idCacheIndex = 0;
         for (QueryResult result : query.results) {
             if(filter.test(result.id)) {
-                if(!usedUniqueIds.add(result.uniqueCubeId)) {
-                    continue; // this cube is identical to one already returned; Skipping this cube
+                int idToCheck = result.uniqueCubeId;
+                if(checkIfIdIsAlreadyUsed(idCacheIndex, idToCheck)) {
+                    continue;
+                }else {
+                    idCache[idCacheIndex++] = idToCheck;
                 }
                 int length = result.cubes.length;
-                System.arraycopy(result.cubes, 0, this.cache, cacheIndex, length);
-                cacheIndex += length;
+                System.arraycopy(result.cubes, 0, this.cubeCache, cubeCacheIndex, length);
+                cubeCacheIndex += length;
             }
         }
 
-        ICube[] result = new ICube[cacheIndex];
-        System.arraycopy(this.cache, 0, result, 0, cacheIndex);
+        ICube[] result = new ICube[cubeCacheIndex];
+        System.arraycopy(this.cubeCache, 0, result, 0, cubeCacheIndex);
         return result;
     }
 
@@ -105,13 +129,13 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
         for (QueryResult result : query.results) {
             if(filter.test(result.id)) {
                 int length = result.cubes.length;
-                System.arraycopy(result.cubes, 0, this.cache, cacheIndex, length);
+                System.arraycopy(result.cubes, 0, this.cubeCache, cacheIndex, length);
                 cacheIndex += length;
             }
         }
 
         ICube[] result = new ICube[cacheIndex];
-        System.arraycopy(this.cache, 0, result, 0, cacheIndex);
+        System.arraycopy(this.cubeCache, 0, result, 0, cacheIndex);
         return result;
     }
 
@@ -172,7 +196,9 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
     public ArrayCubeSorter clone() {
         try {
             ArrayCubeSorter clone = (ArrayCubeSorter) super.clone();
-            clone.cache = new ICube[given.length * 24];
+            clone.cubeCache = new ICube[given.length * 24];
+            clone.idCache = new int[given.length];
+            clone.resultCache = new QueryResult[given.length];
             return clone;
         } catch (CloneNotSupportedException e) { // Should not happen.
             throw new UnsupportedOperationException(e);
