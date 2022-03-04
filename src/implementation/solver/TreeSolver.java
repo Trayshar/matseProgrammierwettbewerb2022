@@ -10,7 +10,6 @@ import implementation.cube.sorter.CubeSorterFactory;
 import implementation.solution.DynamicPuzzleSolution;
 
 import java.util.Arrays;
-import java.util.Comparator;
 import java.util.ConcurrentModificationException;
 import java.util.EnumMap;
 
@@ -19,6 +18,7 @@ public class TreeSolver implements IPuzzleSolver {
     public final int dimensionX, dimensionY, dimensionZ;
     /* Immutable, indexed by tree height */
     private final Coordinate[] coords;
+    /* Immutable feature flag. */
     private final boolean enableLookAhead = false;
 
     /* Immutable, only change are queries getting cached. Indexed by tree height. */
@@ -33,6 +33,7 @@ public class TreeSolver implements IPuzzleSolver {
 
     /* Mutable */
     private TreeNode node;
+    private long sets = 0, expands = 0, undos = 0;
 
     protected TreeSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] threeEdgeC, ICube[] fourConnectedC, ICube[] fiveC, ICube[] sixC, CoordinateGenerator generator) {
         this.dimensionX = dimensionX;
@@ -139,10 +140,20 @@ public class TreeSolver implements IPuzzleSolver {
                         comp[i] = sort.count(filter);
                     }
 
-                    Arrays.sort(cubes, Comparator.<ICube>comparingInt(c -> comp[c.getTriangle(side).ordinal() - 1]).reversed());
+                    Arrays.sort(cubes, (cube1, cube2) -> {
+                        int count1 = comp[cube1.getTriangle(side).ordinal() - 1];
+                        int count2 = comp[cube2.getTriangle(side).ordinal() - 1];
+
+                        if(count1 == 0 && count2 > 0) return 1;
+                        if(count1 == count2) return 0;
+                        if(count1 > 0 && count2 == 0) return -1;
+                        if(count1 < count2) return -1;
+                        return 1; // count1 > count2
+                    });
                 }
             }
             this.node.populate(cubes);
+            expands++;
         }
     }
 
@@ -161,6 +172,7 @@ public class TreeSolver implements IPuzzleSolver {
             ICube tmp = this.solution.set(this.coords[this.node.getHeight()], this.node.getCube());
             if(Puzzle.DEBUG && tmp != null) throw new IllegalStateException();
             this.usedIDs[this.node.getCube().getIdentifier()] = true;
+            this.sets++;
         }
     }
 
@@ -174,19 +186,30 @@ public class TreeSolver implements IPuzzleSolver {
         this.usedIDs[id] = false; // Skipping 0 check since id=0 isn't used anyway
         this.node.validate();
         this.node = this.node.getParent();
+        this.undos++;
     }
 
     private boolean isFree(Integer cube) {
         return !this.usedIDs[cube];
     }
 
+    private long old_sets = 0, old_expands = 0, old_undos = 0;
+
     @Override
     public String getCurrentStatus() {
+        long diff_sets = sets - old_sets;
+        long diff_expands = expands - old_expands;
+        long diff_undos = undos - old_undos;
+
+        old_sets = sets;
+        old_expands = expands;
+        old_undos = undos;
+
         int m = dimensionX * dimensionY * dimensionZ;
         int h = Math.min(m, this.node.getHeight());
         Coordinate c = this.coords[h];
-        return String.format("[%d,%d,%d] Height %d/%d",
-                c.x(), c.y(), c.z(), h, m);
+        return String.format("[%d,%d,%d] Height %d/%d with [%d set, %d expand, %d undo] per second",
+                c.x(), c.y(), c.z(), h, m, diff_sets, diff_expands, diff_undos);
     }
 
     @Override
