@@ -144,7 +144,7 @@ public class Generator {
         return Orientation.get( rand.nextInt(0, 24));
     }
 
-    private static String executeExternalJar(String path, String[] arguments) throws IOException, IllegalStateException {
+    protected static String executeExternalJar(String path, String[] arguments) throws IOException, IllegalStateException {
         try{
             // Redirect output into local buffer.
             java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
@@ -274,7 +274,7 @@ public class Generator {
         System.out.print ("--------------------------\n");
     }
 
-    private static void clearArrayCubeSorterCache() {
+    protected static void clearArrayCubeSorterCache() {
         for(int i = 0; i < 46656; i++) {
             ArrayCubeSorter.queries[i] = null;
         }

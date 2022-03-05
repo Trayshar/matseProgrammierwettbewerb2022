@@ -23,7 +23,7 @@ public class Puzzle implements IPuzzle {
 
 	private int dimensionX, dimensionY, dimensionZ;
 	private ICube[] cubes;
-	private IPuzzleSolution solution;
+	public IPuzzleSolution solution;
 
 	public void readInput(String filename) {
 		ArrayList<ICube> cubes = new ArrayList<>();

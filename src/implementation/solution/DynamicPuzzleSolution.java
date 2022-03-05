@@ -8,13 +8,11 @@ import abstractions.cube.Triangle;
 import implementation.Puzzle;
 import implementation.cube.filter.CubeFilterFactory;
 
-import java.util.Deque;
-
 public class DynamicPuzzleSolution implements IPuzzleSolution {
     public final int dimensionX, dimensionY, dimensionZ;
     private final ICube[][][] cubes;
     private final ICubeFilter[][][] filters;
-    private final Deque<SetOperation> operations;
+    private final FixedArrayStack<SetOperation> operations;
 
     private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
 
@@ -91,7 +89,6 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
      */
     public int undo() {
         SetOperation op = this.operations.removeLast();
-        if (op == null) return -1; // Will never happen
         int x = op.x, y = op.y, z = op.z;
 
         // Resetting filters

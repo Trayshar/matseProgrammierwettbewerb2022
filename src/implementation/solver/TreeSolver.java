@@ -100,6 +100,7 @@ public class TreeSolver implements IPuzzleSolver {
     @Override
     public void prepare() {
         this.node = new TreeNode();
+        expandCurrentNode();
     }
 
     @Override
@@ -109,6 +110,9 @@ public class TreeSolver implements IPuzzleSolver {
 
     @Override
     public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
+        setNextNode();
+        System.out.println("Starting node: " + this.node);
+
         int maxHeight = this.coords.length - 1;
         do {
             if(Thread.interrupted()) {
@@ -284,7 +288,7 @@ public class TreeSolver implements IPuzzleSolver {
          * If no values are provided the node is marked as dead.
          * This function may only be called on this node if it is currently being populated.
          */
-        public synchronized void populate(ICube[] cubes) {
+        public void populate(ICube[] cubes) {
             assert this.status == Status.BeingPopulated;
 
             if (cubes.length == 0) {
@@ -292,11 +296,13 @@ public class TreeSolver implements IPuzzleSolver {
                 return;
             }
 
-            this.children = new TreeNode[cubes.length];
-            for (int i = 0; i < cubes.length; i++) {
-                this.children[i] = new TreeNode(this, cubes[i]);
-            }
-            this.status = Status.Populated;
+            //synchronized (this) {
+                this.children = new TreeNode[cubes.length];
+                for (int i = 0; i < cubes.length; i++) {
+                    this.children[i] = new TreeNode(this, cubes[i]);
+                }
+                this.status = Status.Populated;
+            //}
         }
 
         /**
@@ -327,11 +333,9 @@ public class TreeSolver implements IPuzzleSolver {
          * Checks whether this node is still alive
          */
         public synchronized void validate() {
-            if (this.children == null) return;
+            if (this.children == null || this.children.length == 0) return;
             for (TreeNode n : this.children) {
-                synchronized (n) { //TODO: Potentially useless lock
-                    if (!n.isDead()) return;
-                }
+                if (!n.isDead()) return;
             }
             this.setDead();
         }
