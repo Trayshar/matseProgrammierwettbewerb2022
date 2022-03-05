@@ -8,6 +8,7 @@ import abstractions.cube.ICubeSorter;
 import implementation.Puzzle;
 import implementation.cube.filter.ByteCubeFilter;
 
+import java.util.Arrays;
 import java.util.function.Predicate;
 
 /**
@@ -55,6 +56,19 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
         return false;
     }
 
+    /**
+     * Looks inside the cubeCache from index 0 to "cubeCacheIndex"-1 for a cube with the exact same triangles as "cubeToCheck".
+     * If it is found true is returned.
+     */
+    private boolean checkIfOrientationIsAlreadyUsed(int cubeCacheIndex, ICube cubeToCheck) {
+        for (int i = 0; i < cubeCacheIndex; i++) {
+            if(Arrays.equals(cubeCache[i].getTriangles(), cubeToCheck.getTriangles())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private QuerySet cache(ICubeFilter filter, int index) {
         assert filter.getUniqueId() == index;
 
@@ -64,7 +78,10 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
             for(Orientation o : cube.match(filter)) {
                 ICube c = cube.cloneCube();
                 c.setOrientation(o);
-                cubeCache[cubeCacheIndex++] = c;
+                if(!checkIfOrientationIsAlreadyUsed(cubeCacheIndex, c)) {
+                    cubeCache[cubeCacheIndex++] = c;
+                }
+
             }
 
             if(cubeCacheIndex > 0) {
@@ -137,6 +154,18 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
         ICube[] result = new ICube[cacheIndex];
         System.arraycopy(this.cubeCache, 0, result, 0, cacheIndex);
         return result;
+    }
+
+    /**
+     * Returns all orientations of any one cube that the given filter matches
+     */
+    public ICube[] matchingAny(ICubeFilter filter) {
+        int queryIndex = filter.getUniqueId();
+        QuerySet query = queries[queryIndex];
+        if(query == null) query = this.cache(filter, queryIndex);
+
+        if(query.results.length == 0) return new ICube[0];
+        return Arrays.copyOf(query.results[0].cubes, query.results[0].cubes.length);
     }
 
     @Override

@@ -64,7 +64,7 @@ public final class SolverFactory {
     }
 
     /**
-     * Returns the matching solver for teh problem...
+     * Returns the matching solver for the problem...
      * Throws a PuzzleNotSolvableException if the given data has no solutions by design (missing cubes).
      */
     public static IPuzzleSolver of(int dimX, int dimY, int dimZ, ICube[] cubes) throws PuzzleNotSolvableException {
