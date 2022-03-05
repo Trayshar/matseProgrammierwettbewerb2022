@@ -156,6 +156,18 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
         return result;
     }
 
+    /**
+     * Returns all orientations of any one cube that the given filter matches
+     */
+    public ICube[] matchingAny(ICubeFilter filter) {
+        int queryIndex = filter.getUniqueId();
+        QuerySet query = queries[queryIndex];
+        if(query == null) query = this.cache(filter, queryIndex);
+
+        if(query.results.length == 0) return new ICube[0];
+        return Arrays.copyOf(query.results[0].cubes, query.results[0].cubes.length);
+    }
+
     @Override
     public int count(ICubeFilter matcher, Predicate<Integer> filter) {
         int index = matcher.getUniqueId();

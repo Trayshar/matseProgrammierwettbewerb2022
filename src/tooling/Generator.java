@@ -10,19 +10,18 @@ import abstractions.cube.Triangle;
 import implementation.cube.CachedCube;
 import implementation.cube.filter.CubeFilterFactory;
 import implementation.cube.sorter.ArrayCubeSorter;
-import implementation.cube.sorter.HashCubeSorter;
 import implementation.solver.SolverFactory;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.lang.reflect.Array;
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.jar.JarFile;
@@ -32,6 +31,14 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class Generator {
+
+    public static void main(String[] args) throws IOException {
+        for (int i = 0; i < 20; i++) {
+            generate(4, 3, 3, true, true);
+            File f = new File("result_files/selfcheck.in.txt");
+            Files.copy(f.toPath(), Path.of("input_files/4x3x3/test_" + i + ".txt"));
+        }
+    }
 
     private final static Random rand = new Random();
     private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
@@ -102,7 +109,7 @@ public class Generator {
             f = new File("result_files/selfcheck.in.txt");
             f.createNewFile();
             fw = new FileWriter(f);
-            fw.write(String.format("Dimension: %d,%d,%d\n", dimensionX, dimensionY, dimensionZ));
+            fw.write(String.format("Dimension %d,%d,%d\n", dimensionX, dimensionY, dimensionZ));
             for (int x = 0; x < dimensionX; x++) {
                 for (int y = 0; y < dimensionY; y++) {
                     for (int z = 0; z < dimensionZ; z++) {

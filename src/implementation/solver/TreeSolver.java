@@ -18,8 +18,6 @@ public class TreeSolver implements IPuzzleSolver {
     public final int dimensionX, dimensionY, dimensionZ;
     /* Immutable, indexed by tree height */
     private final Coordinate[] coords;
-    /* Immutable feature flag. */
-    private final boolean enableLookAhead = false;
 
     /* Immutable, only change are queries getting cached. Indexed by tree height. */
     private final ArrayCubeSorter[] sorter;
@@ -100,7 +98,12 @@ public class TreeSolver implements IPuzzleSolver {
     @Override
     public void prepare() {
         this.node = new TreeNode();
-        expandCurrentNode();
+        if(this.sorter[0] == this.sorterMap.get(CubeType.ThreeEdge) && (dimensionX == dimensionY || dimensionY == dimensionZ || dimensionX == dimensionZ)) {
+            ICube[] cubes = this.sorter[0].matchingAny(this.solution.getFilterAt(this.coords[0]));
+            expandInternally(0, cubes, false);
+        }else {
+            expandCurrentNode();
+        }
     }
 
     @Override
@@ -131,34 +134,38 @@ public class TreeSolver implements IPuzzleSolver {
             int childHeight = this.node.getHeight() + 1;
             ICube[] cubes = this.sorter[childHeight].matching(this.solution.getFilterAt(this.coords[childHeight]), this::isFree);
 
-            if(enableLookAhead && childHeight + 1 < this.coords.length && cubes.length > 3) { // Lookahead to sort child notes
-                ICube.Side side = this.coords[childHeight + 1].adjacentTo(this.coords[childHeight]); // Side of "childHeight" that looks at "childHeight + 1"
-                if(side != null) {
-                    var sort = this.sorter[childHeight + 1];
-                    var filter = this.solution.getFilterAt(this.coords[childHeight + 1]).cloneFilter();
-                    var opposite = side.getOpposite();
-                    boolean isVertical = side.z != 0;
-                    int[] comp = new int[4]; // Maps the triangle a cube has on side "side" to the amount of potential next candidates
-                    for (int i = 0; i < 4; i++) {
-                        filter.setSide(opposite, Triangle.valueOf(i+1).getMatching(isVertical));
-                        comp[i] = sort.count(filter);
-                    }
-
-                    Arrays.sort(cubes, (cube1, cube2) -> {
-                        int count1 = comp[cube1.getTriangle(side).ordinal() - 1];
-                        int count2 = comp[cube2.getTriangle(side).ordinal() - 1];
-
-                        if(count1 == 0 && count2 > 0) return 1;
-                        if(count1 == count2) return 0;
-                        if(count1 > 0 && count2 == 0) return -1;
-                        if(count1 < count2) return -1;
-                        return 1; // count1 > count2
-                    });
-                }
-            }
-            this.node.populate(cubes);
-            expands++;
+            expandInternally(childHeight, cubes, false);
         }
+    }
+
+    private void expandInternally(int childHeight, ICube[] cubes, boolean enableLookAhead) {
+        if(enableLookAhead && childHeight + 1 < this.coords.length) { // Lookahead to sort child notes
+            ICube.Side side = this.coords[childHeight + 1].adjacentTo(this.coords[childHeight]); // Side of "childHeight" that looks at "childHeight + 1"
+            if(side != null) {
+                var sort = this.sorter[childHeight + 1];
+                var filter = this.solution.getFilterAt(this.coords[childHeight + 1]).cloneFilter();
+                var opposite = side.getOpposite();
+                boolean isVertical = side.z != 0;
+                int[] comp = new int[4]; // Maps the triangle a cube has on side "side" to the amount of potential next candidates
+                for (int i = 0; i < 4; i++) {
+                    filter.setSide(opposite, Triangle.valueOf(i+1).getMatching(isVertical));
+                    comp[i] = sort.count(filter);
+                }
+
+                Arrays.sort(cubes, (cube1, cube2) -> { // Sort so that smallest comes first, but 0 last
+                    int count1 = comp[cube1.getTriangle(side).ordinal() - 1];
+                    int count2 = comp[cube2.getTriangle(side).ordinal() - 1];
+
+                    if(count1 == 0 && count2 > 0) return 1;
+                    if(count1 == count2) return 0;
+                    if(count1 > 0 && count2 == 0) return -1;
+                    if(count1 < count2) return -1;
+                    return 1; // count1 > count2
+                });
+            }
+        }
+        this.node.populate(cubes);
+        expands++;
     }
 
     /**
