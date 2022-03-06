@@ -40,7 +40,7 @@ public interface ICube extends Cloneable {
      * Returns the matching triangle of this for the given side.
      */
     default byte getMatchingTriangle(int side) {
-        return this.getMatchingTriangle(side, Side.valueOf(side).z != 0);
+        return this.getMatchingTriangle(side, Side.isVertical[side]);
     }
 
     /**
@@ -102,10 +102,18 @@ public interface ICube extends Cloneable {
             this.z = z;
         }
 
+        private static final boolean[] isVertical = new boolean[]{true, false, false, false, false, true};
+
         private static final Side[] opposite = {Down, Right, Back, Left, Front, Up};
 
         public Side getOpposite() {
             return opposite[this.ordinal()];
+        }
+
+        private static final byte[] oppositeBytes = {(byte) Down.ordinal(), (byte) Right.ordinal(), (byte) Back.ordinal(), (byte) Left.ordinal(), (byte) Front.ordinal(), (byte) Up.ordinal()};
+
+        public static byte getOpposite(int side) {
+            return oppositeBytes[side];
         }
 
         /**

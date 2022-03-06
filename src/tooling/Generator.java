@@ -33,10 +33,14 @@ import java.util.stream.Stream;
 public class Generator {
 
     public static void main(String[] args) throws IOException {
+        final int x = 4;
+        final int y = 2;
+        final int z = 5;
+
         for (int i = 0; i < 20; i++) {
-            generate(4, 3, 3, true, true);
+            generate(x, y, z, true, true);
             File f = new File("result_files/selfcheck.in.txt");
-            Files.copy(f.toPath(), Path.of("input_files/4x3x3/test_" + i + ".txt"));
+            Files.copy(f.toPath(), Path.of("input_files/" + x + "x" + y + "x" + z + "/test_" + i + ".txt"));
         }
     }
 
@@ -195,36 +199,21 @@ public class Generator {
     public static double doTesting(int dimX, int dimY, int dimZ, boolean shuffle, boolean rotate, int timeout) {
         System.out.printf("Generating puzzle: [%d, %d, %d] %s %s\n", dimX, dimY, dimZ, shuffle ? "shuffled" : "", rotate ? "rotated" : "");
         var cubes = generate(dimX, dimY, dimZ, shuffle, rotate).toArray(ICube[]::new);
+        return doTesting(dimX, dimY, dimZ, cubes, timeout, "result_files/selfcheck.in.txt");
+    }
+
+    public static double doTesting(int dimX, int dimY, int dimZ, ICube[] cubes, int timeout, String fileIn) {
         System.out.printf("Got %d cubes...\n", cubes.length);
-        Future<IPuzzleSolution> solverHandle = null;
-        ScheduledFuture<?> observerHandle = null;
         IPuzzleSolution solution = null;
         try{
             //printMemoryStats();
             clearArrayCubeSorterCache();
             System.out.println("--- Starting solver ---");
 
-            IPuzzleSolver s = SolverFactory.of(dimX, dimY, dimZ, cubes);
-            s.prepare();
+            var s = SolverFactory.of(dimX, dimY, dimZ, cubes);
 
             long var3 = System.currentTimeMillis();
-            if(s.canRunConcurrent()) {
-                List<IPuzzleSolver> solvers = new ArrayList<>();
-                solvers.add(s);
-                solvers.add(s.deepClone());
-                solvers.add(s.deepClone());
-                solvers.add(s.deepClone());
-                observerHandle = observerExecutor.scheduleAtFixedRate(() -> {
-                    for (int i = 0; i < 4; i++) {
-                        System.out.println("[T" + i + "] " + solvers.get(i).getCurrentStatus());
-                    }
-                }, 1, 1, TimeUnit.SECONDS);
-                solution = solverExecutor.invokeAny(solvers, timeout, TimeUnit.SECONDS);
-            }else {
-                observerHandle = observerExecutor.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
-                solverHandle = solverExecutor.submit((Callable<IPuzzleSolution>) s);
-                solution = solverHandle.get(timeout, TimeUnit.SECONDS);
-            }
+            solution = s.solveWithTimeout(solverExecutor, observerExecutor, timeout);
             long var5 = System.currentTimeMillis();
 
             double time = (double)(var5 - var3) / 1000.0D;
@@ -246,7 +235,7 @@ public class Generator {
                 throw new PuzzleNotSolvableException();
             }
 
-            result = executeExternalJar("library/validator.jar", new String[]{"result_files/selfcheck.in.txt", "result_files/selfcheck.out.txt"});
+            result = executeExternalJar("library/validator.jar", new String[]{fileIn, "result_files/selfcheck.out.txt"});
             if(Pattern.compile(".* insgesamt \\d+ Fehler auf!.*").matcher(result).find()) {
                 System.err.println("Failed to solve puzzle!");
                 System.err.print(result);
@@ -254,22 +243,19 @@ public class Generator {
             }
 
             return time;
-        }catch (PuzzleNotSolvableException | ExecutionException e) {
+        }catch (PuzzleNotSolvableException  e) {
             System.err.println("Failed to solve puzzle: " + e.getMessage());
             System.err.printf("Solution: %s\n", solution == null ? "null" : solution.serialize());
             System.err.printf("Cubes: %s\n", Arrays.toString(Arrays.stream(cubes).map(ICube::serialize).toArray()));
             System.exit(-1);
             return -1;
-        } catch (IOException | IllegalStateException | InterruptedException e) {
+        } catch (IOException | IllegalStateException e) {
             e.printStackTrace();
             System.exit(-1);
             return -1;
         } catch (TimeoutException e) {
             System.out.println("Timeout!");
             return timeout;
-        } finally {
-            if(solverHandle != null) solverHandle.cancel(true);
-            if(observerHandle != null) observerHandle.cancel(true);
         }
     }
 

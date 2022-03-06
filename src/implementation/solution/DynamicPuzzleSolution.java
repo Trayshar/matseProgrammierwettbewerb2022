@@ -14,8 +14,6 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
     private final ICubeFilter[][][] filters;
     private final FixedArrayStack<SetOperation> operations;
 
-    private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
-
     public DynamicPuzzleSolution(int dimensionX, int dimensionY, int dimensionZ) {
         this.dimensionX = dimensionX;
         this.dimensionY = dimensionY;
@@ -27,7 +25,7 @@ public class DynamicPuzzleSolution implements IPuzzleSolution {
         for (int x = 0; x < dimensionX; x++) {
             for (int y = 0; y < dimensionY; y++) {
                 for (int z = 0; z < dimensionZ; z++) {
-                    ICubeFilter f = defaultFilter.cloneFilter();
+                    ICubeFilter f = CubeFilterFactory.defaultFilter();
                     if(x == 0) f.setSide(ICube.Side.Back, Triangle.None);
                     if(x == dimensionX - 1) f.setSide(ICube.Side.Front, Triangle.None);
                     if(y == 0) f.setSide(ICube.Side.Left, Triangle.None);
