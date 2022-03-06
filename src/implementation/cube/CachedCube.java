@@ -134,6 +134,11 @@ public class CachedCube implements ICube {
     }
 
     @Override
+    public byte[] getTriangles(int o) {
+        return this.data[o];
+    }
+
+    @Override
     public String toString() {
         return this.serialize();
     }

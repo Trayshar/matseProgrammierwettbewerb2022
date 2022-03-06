@@ -54,7 +54,7 @@ public class EdgeCoordinateGenerator extends CoordinateGenerator {
             coords[i++] = new Coordinate(0, y, maxZ);
         }
 
-        // low plane, filling
+        // bottom plane, filling
         for (int x = 1; x < maxX; x++) {
             for (int y = 1; y < maxY; y++) {
                 coords[i++] = new Coordinate(x, y, 0);

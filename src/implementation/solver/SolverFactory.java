@@ -6,6 +6,7 @@ import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
+import implementation.EdgeCoordinateGenerator;
 import implementation.LinearCoordinateGenerator;
 import implementation.solution.DynamicPuzzleSolution;
 
@@ -325,9 +326,10 @@ public final class SolverFactory {
             TreeSolver s3 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, generator);
 
             s.prepare();
-            s1.syncStartingNode(s);
-            s2.syncStartingNode(s);
-            s3.syncStartingNode(s);
+            s1.syncStartingNode(s, 1);
+            s2.syncStartingNode(s, 2);
+            s3.syncStartingNode(s, 3);
+            s.syncStartingNode(s, 0);
 
             solvers = List.of(s, s1, s2, s3);
         }
