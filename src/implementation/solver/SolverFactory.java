@@ -5,6 +5,7 @@ import abstractions.IPuzzleSolver;
 import abstractions.PuzzleNotSolvableException;
 import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
+import implementation.EdgeCoordinateGenerator;
 import implementation.LinearCoordinateGenerator;
 import implementation.solution.DynamicPuzzleSolution;
 

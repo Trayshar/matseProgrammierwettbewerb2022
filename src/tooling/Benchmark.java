@@ -37,6 +37,7 @@ public class Benchmark {
             if(inputFolder != null) {
                 if(!inputFolder.exists() || !inputFolder.isDirectory()) throw new FileNotFoundException();
 
+                runs = 0;
                 try (FileWriter fw = new FileWriter("result_files/" + inputFolder.getName() + "_" + name + "_" + System.currentTimeMillis() + ".csv")) {
                     fw.write("x,y,z,time,cubes,file\n");
 
@@ -74,6 +75,7 @@ public class Benchmark {
                         System.out.println("Took " + deltaT + " seconds!");
                         fw.write(x + "," + y + "," + z + "," + deltaT + "," + x*y*z + "," + f.getName() + "\n");
                         fw.flush();
+                        runs++;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();

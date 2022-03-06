@@ -105,7 +105,7 @@ public class Puzzle implements IPuzzle {
 		int col = s.indexOf(':');
 		int id = Integer.parseInt(s.substring(5, col));
 		Triangle[] tri = Arrays.stream(s.substring(col + 2).split(" ")).mapToInt(Integer::parseInt).mapToObj(Triangle::valueOf).toArray(Triangle[]::new);
-		System.out.println("Read cube: " + id + ", " + Arrays.toString(tri));
+		//System.out.println("Read cube: " + id + ", " + Arrays.toString(tri));
 		return new CachedCube(id, tri);
 	}
 
