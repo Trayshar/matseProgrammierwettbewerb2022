@@ -1,106 +1,88 @@
 package implementation.solver;
 
 import abstractions.*;
-import abstractions.cube.CubeType;
-import abstractions.cube.ICube;
-import abstractions.cube.Triangle;
+import abstractions.cube.*;
 import implementation.Puzzle;
+import implementation.cube.filter.CubeFilterFactory;
 import implementation.cube.sorter.ArrayCubeSorter;
 import implementation.cube.sorter.CubeSorterFactory;
-import implementation.solution.DynamicPuzzleSolution;
 
-import java.util.Arrays;
 import java.util.ConcurrentModificationException;
 import java.util.EnumMap;
 
-public class TreeSolver implements IPuzzleSolver {
+public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
     /* Immutable dimensions of this solver */
     public final int dimensionX, dimensionY, dimensionZ;
-    /* Immutable, indexed by tree height */
-    private final Coordinate[] coords;
-
-    /* Immutable, only change are queries getting cached. Indexed by tree height. */
-    private final ArrayCubeSorter[] sorter;
-
-    /* Immutable, only exists for cloning */
-    private final EnumMap<CubeType, ArrayCubeSorter> sorterMap = new EnumMap<>(CubeType.class);
+    private final boolean isFirstCoordEdge;
 
     /* Immutable references, but inner state is mutable */
-    private final DynamicPuzzleSolution solution;
     private final boolean[] usedIDs;
+    /* Immutable references, but inner state of each Node might change. Indexed by tree height. Not to be synchronized. */
+    private final SolutionNode[] solution;
 
     /* Mutable */
     private TreeNode node;
     private long sets = 0, expands = 0, undos = 0;
 
-    protected TreeSolver(int dimensionX, int dimensionY, int dimensionZ, ICube[] threeEdgeC, ICube[] fourConnectedC, ICube[] fiveC, ICube[] sixC, CoordinateGenerator generator) {
+    protected TreeSolver(int dimensionX, int dimensionY, int dimensionZ, EnumMap<CubeType, ICube[]> cubeMap, CoordinateGenerator generator) {
         this.dimensionX = dimensionX;
         this.dimensionY = dimensionY;
         this.dimensionZ = dimensionZ;
-        this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
-        this.coords = generator.generate();
-        this.sorter = new ArrayCubeSorter[dimensionX * dimensionY * dimensionZ];
         this.usedIDs = new boolean[dimensionX * dimensionY * dimensionZ + 1];
+        this.solution = new SolutionNode[dimensionX * dimensionY * dimensionZ];
 
-        ArrayCubeSorter threeEdge = CubeSorterFactory.from(threeEdgeC, CubeType.ThreeEdge);
-        ArrayCubeSorter fourConnected = CubeSorterFactory.from(fourConnectedC, CubeType.FourConnected);
-        ArrayCubeSorter five = CubeSorterFactory.from(fiveC, CubeType.Five);
-        ArrayCubeSorter six = CubeSorterFactory.from(sixC, CubeType.Six);
-
-        sorterMap.put(CubeType.ThreeEdge, threeEdge);
-        sorterMap.put(CubeType.FourConnected, fourConnected);
-        sorterMap.put(CubeType.Five, five);
-        sorterMap.put(CubeType.Six, six);
-
-        for (int i = 0; i < this.coords.length; i++) {
-            switch (CubeType.get(this.solution.getFilterAt(this.coords[i]).getTriangles())) {
-                case ThreeEdge -> this.sorter[i] = threeEdge;
-                case FourConnected -> this.sorter[i] = fourConnected;
-                case Five -> this.sorter[i] = five;
-                case Six -> this.sorter[i] = six;
-            }
-        }
+        this.isFirstCoordEdge = this.initSolution(generator.generate(), cubeMap);
     }
 
-    /**
-     * Internal copy constructor
-     */
-    private TreeSolver(int dimensionX, int dimensionY, int dimensionZ, Coordinate[] coords, EnumMap<CubeType, ArrayCubeSorter> sorterMap, TreeNode node) {
-        this.dimensionX = dimensionX;
-        this.dimensionY = dimensionY;
-        this.dimensionZ = dimensionZ;
-        this.coords = coords;
-        this.sorter = new ArrayCubeSorter[dimensionX * dimensionY * dimensionZ];
-        this.solution = new DynamicPuzzleSolution(dimensionX, dimensionY, dimensionZ);
-        this.usedIDs = new boolean[dimensionX * dimensionY * dimensionZ + 1];
-        this.node = node;
+    protected void syncStartingNode(TreeSolver original) {
+        this.node = original.node;
+    }
 
-        ArrayCubeSorter threeEdge = sorterMap.get(CubeType.ThreeEdge).clone();
-        ArrayCubeSorter fourConnected = sorterMap.get(CubeType.FourConnected).clone();
-        ArrayCubeSorter five = sorterMap.get(CubeType.Five).clone();
-        ArrayCubeSorter six = sorterMap.get(CubeType.Six).clone();
+    private boolean initSolution(Coordinate[] coords, EnumMap<CubeType, ICube[]> cubeMap) {
+        SolutionNode[][][] tmp = new SolutionNode[dimensionX][dimensionY][dimensionZ];
 
-        sorterMap.put(CubeType.ThreeEdge, threeEdge);
-        sorterMap.put(CubeType.FourConnected, fourConnected);
-        sorterMap.put(CubeType.Five, five);
-        sorterMap.put(CubeType.Six, six);
+        boolean isFirstCoordEdge = false;
+        for (int i = 0; i < coords.length; i++) {
+            Coordinate c = coords[i];
+            ICubeFilter f = CubeFilterFactory.defaultFilter();
+            if(c.x() == 0) f.setSide(ICube.Side.Back, Triangle.None);
+            if(c.x() == dimensionX - 1) f.setSide(ICube.Side.Front, Triangle.None);
+            if(c.y() == 0) f.setSide(ICube.Side.Left, Triangle.None);
+            if(c.y() == dimensionY - 1) f.setSide(ICube.Side.Right, Triangle.None);
+            if(c.z() == 0) f.setSide(ICube.Side.Down, Triangle.None);
+            if(c.z() == dimensionZ - 1) f.setSide(ICube.Side.Up, Triangle.None);
 
-        for (int i = 0; i < this.coords.length; i++) {
-            switch (CubeType.get(this.solution.getFilterAt(this.coords[i]).getTriangles())) {
-                case ThreeEdge -> this.sorter[i] = threeEdge;
-                case FourConnected -> this.sorter[i] = fourConnected;
-                case Five -> this.sorter[i] = five;
-                case Six -> this.sorter[i] = six;
+            CubeType type = CubeType.get(f.getTriangles());
+            ArrayCubeSorter s = CubeSorterFactory.from(cubeMap.get(type), type);
+            if(i == 0 && type == CubeType.ThreeEdge) isFirstCoordEdge = true;
+
+            this.solution[i] = new SolutionNode(c, f, s);
+            tmp[c.x()][c.y()][c.z()] = this.solution[i];
+        }
+
+        for (int x = 0; x < dimensionX; x++) {
+            for (int y = 0; y < dimensionY; y++) {
+                for (int z = 0; z < dimensionZ; z++) {
+                    for (ICube.Side s : ICube.Side.values()) {
+                        if(x + s.x >= 0 && x + s.x < dimensionX &&
+                                y + s.y >= 0 && y + s.y < dimensionY &&
+                                z + s.z >= 0 && z + s.z < dimensionZ) {
+                            tmp[x][y][z].neighbors[s.ordinal()] = tmp[x + s.x][y + s.y][z + s.z];
+                        }
+                    }
+                }
             }
         }
+
+        return isFirstCoordEdge;
     }
 
     @Override
     public void prepare() {
         this.node = new TreeNode();
-        if(this.sorter[0] == this.sorterMap.get(CubeType.ThreeEdge) && (dimensionX == dimensionY || dimensionY == dimensionZ || dimensionX == dimensionZ)) {
-            ICube[] cubes = this.sorter[0].matchingAny(this.solution.getFilterAt(this.coords[0]));
-            expandInternally(0, cubes, false);
+        if(isFirstCoordEdge && (dimensionX == dimensionY || dimensionY == dimensionZ || dimensionX == dimensionZ)) {
+            ICube[] cubes = this.solution[0].sorter.matchingAny(this.solution[0].filter);
+            this.node.populate(cubes);
         }else {
             expandCurrentNode();
         }
@@ -116,7 +98,7 @@ public class TreeSolver implements IPuzzleSolver {
         setNextNode();
         System.out.println("Starting node: " + this.node);
 
-        int maxHeight = this.coords.length - 1;
+        int maxHeight = this.solution.length - 1;
         do {
             if(Thread.interrupted()) {
                 if(Puzzle.LOG) System.out.println("Got interrupted, exiting!");
@@ -126,46 +108,14 @@ public class TreeSolver implements IPuzzleSolver {
             setNextNode();
         } while(this.node.getHeight() < maxHeight);
 
-        return solution;
+        return this;
     }
 
     public void expandCurrentNode() {
         if(this.node.isBeingPopulated()) {
-            int childHeight = this.node.getHeight() + 1;
-            ICube[] cubes = this.sorter[childHeight].matching(this.solution.getFilterAt(this.coords[childHeight]), this::isFree);
-
-            expandInternally(childHeight, cubes, false);
+            this.node.populate(this.solution[this.node.getHeight() + 1].matching());
+            expands++;
         }
-    }
-
-    private void expandInternally(int childHeight, ICube[] cubes, boolean enableLookAhead) {
-        if(enableLookAhead && childHeight + 1 < this.coords.length) { // Lookahead to sort child notes
-            ICube.Side side = this.coords[childHeight + 1].adjacentTo(this.coords[childHeight]); // Side of "childHeight" that looks at "childHeight + 1"
-            if(side != null) {
-                var sort = this.sorter[childHeight + 1];
-                var filter = this.solution.getFilterAt(this.coords[childHeight + 1]).cloneFilter();
-                var opposite = side.getOpposite();
-                boolean isVertical = side.z != 0;
-                int[] comp = new int[4]; // Maps the triangle a cube has on side "side" to the amount of potential next candidates
-                for (int i = 0; i < 4; i++) {
-                    filter.setSide(opposite, Triangle.valueOf(i+1).getMatching(isVertical));
-                    comp[i] = sort.count(filter);
-                }
-
-                Arrays.sort(cubes, (cube1, cube2) -> { // Sort so that smallest comes first, but 0 last
-                    int count1 = comp[cube1.getTriangle(side).ordinal() - 1];
-                    int count2 = comp[cube2.getTriangle(side).ordinal() - 1];
-
-                    if(count1 == 0 && count2 > 0) return 1;
-                    if(count1 == count2) return 0;
-                    if(count1 > 0 && count2 == 0) return -1;
-                    if(count1 < count2) return -1;
-                    return 1; // count1 > count2
-                });
-            }
-        }
-        this.node.populate(cubes);
-        expands++;
     }
 
     /**
@@ -174,27 +124,29 @@ public class TreeSolver implements IPuzzleSolver {
     public void setNextNode() throws PuzzleNotSolvableException {
         TreeNode nextNode = this.node.getNext();
         if(nextNode == null) { // Either this node is empty, or all children are already being processed by another thread
-            this.undo();
-            this.setNextNode();
+//            TreeNode nextSibling = this.node.parent.getNext();
+//            if(nextSibling != null) { // The parent of the current node has a "free" child
+//                this.node.validate(); // Current node may be dead at this point
+//                this.undos++;
+//                if(Puzzle.DEBUG && nextSibling.isDead()) throw new ConcurrentModificationException();
+//                this.node = nextSibling;
+//                this.solution[this.node.getHeight()].set(this.node.getCube());
+//                this.sets++;
+//            }else {
+                this.undo();
+                this.setNextNode();
+//            }
         }
         else {
             if(Puzzle.DEBUG && nextNode.isDead()) throw new ConcurrentModificationException();
             this.node = nextNode;
-            ICube tmp = this.solution.set(this.coords[this.node.getHeight()], this.node.getCube());
-            if(Puzzle.DEBUG && tmp != null) throw new IllegalStateException();
-            this.usedIDs[this.node.getCube().getIdentifier()] = true;
+            this.solution[this.node.getHeight()].set(this.node.getCube());
             this.sets++;
         }
     }
 
-    private void undo() throws PuzzleNotSolvableException {
-        // Undoes the operation in the solution object and freeing the id of the used cube
-        int id = this.solution.undo();
-        if(id == -1) throw new PuzzleNotSolvableException();
-        if (Puzzle.DEBUG && id > 0 && !this.usedIDs[id]) {
-            throw new IllegalStateException("Trying to free ID " + id + " which wasn't used!");
-        }
-        this.usedIDs[id] = false; // Skipping 0 check since id=0 isn't used anyway
+    private void undo() {
+        this.solution[this.node.getHeight()].unset(); // Will crash if on root node (root.getHeight() = -1)
         this.node.validate();
         this.node = this.node.getParent();
         this.undos++;
@@ -218,19 +170,94 @@ public class TreeSolver implements IPuzzleSolver {
 
         int m = dimensionX * dimensionY * dimensionZ;
         int h = Math.min(m, this.node.getHeight());
-        Coordinate c = this.coords[h];
+        Coordinate c = this.solution[h].coordinate;
         return String.format("[%d,%d,%d] Height %d/%d with [%d set, %d expand, %d undo] per second",
                 c.x(), c.y(), c.z(), h, m, diff_sets, diff_expands, diff_undos);
     }
 
     @Override
-    public IPuzzleSolver deepClone() {
-        return new TreeSolver(dimensionX, dimensionY, dimensionZ, coords, sorterMap, node);
+    public boolean canRunConcurrent() {
+        return true;
     }
 
     @Override
-    public boolean canRunConcurrent() {
-        return true;
+    public String serialize() {
+        StringBuilder b = new StringBuilder();
+        b.append("Dimension ");
+        b.append(this.getDimensionX());
+        b.append(',');
+        b.append(this.getDimensionY());
+        b.append(',');
+        b.append(this.getDimensionZ());
+        b.append('\n');
+
+        for (SolutionNode n : this.solution) {
+            b.append('[');
+            b.append(n.coordinate.x() + 1);
+            b.append(',');
+            b.append(n.coordinate.y() + 1);
+            b.append(',');
+            b.append(n.coordinate.z() + 1);
+            b.append("] ");
+            ICube c = n.cube;
+            if(c != null) b.append(c.serialize());
+            else throw new IllegalStateException("Cube may not be null!");
+            b.append('\n');
+        }
+
+        return b.toString();
+    }
+
+    /**
+     * Each node represents one position in the solution
+     */
+    private class SolutionNode {
+        private final Coordinate coordinate;
+        private final ICubeFilter filter;
+        private final ArrayCubeSorter sorter;
+        /** Neighboring nodes, indexed by Side.ordinal() */
+        private final SolutionNode[] neighbors = new SolutionNode[6];
+        private ICube cube = null;
+
+        private SolutionNode(Coordinate coordinate, ICubeFilter filter, ArrayCubeSorter sorter) {
+            this.coordinate = coordinate;
+            this.filter = filter;
+            this.sorter = sorter;
+        }
+
+        /**
+         * Returns all cubes that match into this node
+         */
+        private ICube[] matching() {
+            return this.sorter.matching(this.filter, TreeSolver.this::isFree);
+        }
+
+        private void set(ICube cube) {
+            assert this.filter.match(cube);
+
+            if(this.cube != null) TreeSolver.this.usedIDs[this.cube.getIdentifier()] = false;
+            TreeSolver.this.usedIDs[cube.getIdentifier()] = true;
+            this.cube = cube;
+
+            for (int i = 0; i < 6; i++) {
+                SolutionNode neighbor = this.neighbors[i];
+                if(neighbor != null) {
+                    neighbor.filter.setSide(ICube.Side.getOpposite(i), cube.getMatchingTriangle(i));
+                }
+            }
+        }
+
+        private void unset() {
+            if(this.cube != null) TreeSolver.this.usedIDs[this.cube.getIdentifier()] = false;
+            this.cube = null;
+
+            for (int i = 0; i < 6; i++) {
+                SolutionNode neighbor = this.neighbors[i];
+                if(neighbor != null) {
+                    neighbor.filter.setSide(ICube.Side.getOpposite(i), (byte) 5);
+                }
+            }
+        }
     }
 
     /**
@@ -371,5 +398,40 @@ public class TreeSolver implements IPuzzleSolver {
                 this.eligible = eligible;
             }
         }
+    }
+
+    @Override
+    public IPuzzleSolver deepClone() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ICube set(int x, int y, int z, ICube cube) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ICube getSolutionAt(int x, int y, int z) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public ICubeFilter getFilterAt(int x, int y, int z) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getDimensionX() {
+        return this.dimensionX;
+    }
+
+    @Override
+    public int getDimensionY() {
+        return this.dimensionY;
+    }
+
+    @Override
+    public int getDimensionZ() {
+        return this.dimensionZ;
     }
 }

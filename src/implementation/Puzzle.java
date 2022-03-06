@@ -21,8 +21,8 @@ public class Puzzle implements IPuzzle {
 	public static final boolean DEBUG = false;
 	public static final boolean LOG = false;
 
-	private int dimensionX, dimensionY, dimensionZ;
-	private ICube[] cubes;
+	public int dimensionX, dimensionY, dimensionZ;
+	public ICube[] cubes;
 	public IPuzzleSolution solution;
 
 	public void readInput(String filename) {
@@ -49,39 +49,16 @@ public class Puzzle implements IPuzzle {
 
 	public void solve() {
 		try {
-			IPuzzleSolver s = SolverFactory.of(dimensionX, dimensionY, dimensionZ, cubes);
+			var s = SolverFactory.of(dimensionX, dimensionY, dimensionZ, cubes);
 			if(Puzzle.LOG) {
-				ScheduledExecutorService executorService = Executors.newSingleThreadScheduledExecutor();
-				executorService.scheduleAtFixedRate(s, 1, 1, TimeUnit.SECONDS);
-				this.solution = solve(s);
-				executorService.shutdownNow();
+				this.solution = s.solveWithLogging();
 			}else {
-				this.solution = solve(s);
+				this.solution = s.solve();
 			}
 		} catch (PuzzleNotSolvableException e) {
 			e.printStackTrace();
 			this.solution = null;
 		}
-	}
-
-	private IPuzzleSolution solve(IPuzzleSolver s) throws PuzzleNotSolvableException {
-		s.prepare();
-		if(s.canRunConcurrent()) {
-			ExecutorService executorService = Executors.newFixedThreadPool(4);
-			List<IPuzzleSolver> solvers = new ArrayList<>(4);
-			solvers.add(s);
-			solvers.add(s.deepClone());
-			solvers.add(s.deepClone());
-			solvers.add(s.deepClone());
-			try {
-				var tmp = executorService.invokeAny(solvers);
-				executorService.shutdownNow();
-				return tmp;
-			} catch (InterruptedException | ExecutionException e) {
-				throw new PuzzleNotSolvableException("Caught exception ", e);
-			}
-		}
-		return s.solve();
 	}
 
 	public boolean hasSolution() {

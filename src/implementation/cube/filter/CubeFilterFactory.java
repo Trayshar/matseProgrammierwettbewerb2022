@@ -12,4 +12,13 @@ public final class CubeFilterFactory {
     public static ICubeFilter from(byte... triangles) {
         return new ByteCubeFilter(triangles);
     }
+
+    private final static ICubeFilter defaultFilter = CubeFilterFactory.from(Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone, Triangle.AnyNotNone);
+
+    /**
+     * Returns a filter with "Triangle.AnyNotNone" on each side
+     */
+    public static ICubeFilter defaultFilter() {
+        return defaultFilter.cloneFilter();
+    }
 }

@@ -6,7 +6,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.regex.Pattern;
 
 public class Benchmark {
     public static void main(String[] args) throws FileNotFoundException {
@@ -37,45 +36,21 @@ public class Benchmark {
             if(inputFolder != null) {
                 if(!inputFolder.exists() || !inputFolder.isDirectory()) throw new FileNotFoundException();
 
-                runs = 0;
+                runs = 1;
                 try (FileWriter fw = new FileWriter("result_files/" + inputFolder.getName() + "_" + name + "_" + System.currentTimeMillis() + ".csv")) {
-                    fw.write("x,y,z,time,cubes,file\n");
+                    fw.write("time,file\n");
 
                     for(File f : inputFolder.listFiles((file, s) -> s.endsWith(".txt"))) {
                         Generator.clearArrayCubeSorterCache();
                         Puzzle p = new Puzzle();
                         p.readInput(f.getAbsolutePath());
-                        long var3 = System.currentTimeMillis();
-                        p.solve();
-                        long var5 = System.currentTimeMillis();
-                        if (p.hasSolution()) {
-                            p.writeResult("result_files/selfcheck.out.txt");
 
-                            String result = Generator.executeExternalJar("library/RaetselTester.jar", new String[]{"result_files/selfcheck.out.txt"});
-                            if(Pattern.compile(".*Puzzle enthält \\d+ Fehler!.*").matcher(result).find()) {
-                                System.err.println("Failed to solve puzzle!");
-                                System.err.print(result);
-                                System.exit(1);
-                            }
+                        double deltaT = Generator.doTesting(p.dimensionX, p.dimensionY, p.dimensionZ, p.cubes, timeout, f.getAbsolutePath());
 
-                            result = Generator.executeExternalJar("library/validator.jar", new String[]{f.getAbsolutePath(), "result_files/selfcheck.out.txt"});
-                            if(Pattern.compile(".* insgesamt \\d+ Fehler auf!.*").matcher(result).find()) {
-                                System.err.println("Failed to solve puzzle!");
-                                System.err.print(result);
-                                System.exit(1);
-                            }
-                        }
-                        else {
-                            System.err.println("Failed to solve puzzle " + f.getName());
-                            System.exit(1);
-                        }
-
-                        double deltaT = (double)(var5 - var3) / 1000.0D;
                         t += deltaT;
                         System.out.println("Took " + deltaT + " seconds!");
-                        fw.write(x + "," + y + "," + z + "," + deltaT + "," + x*y*z + "," + f.getName() + "\n");
+                        fw.write(deltaT + "," + f.getName() + "\n");
                         fw.flush();
-                        runs++;
                     }
                 } catch (IOException e) {
                     e.printStackTrace();
