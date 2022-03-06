@@ -74,6 +74,8 @@ public interface ICube extends Cloneable {
      */
     byte[] getTriangles(Orientation o);
 
+    byte[] getTriangles(int o);
+
     /**
      * Serializes the cube with its current orientation.
      */

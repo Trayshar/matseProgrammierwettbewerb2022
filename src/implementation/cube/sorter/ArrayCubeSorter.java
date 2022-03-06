@@ -57,12 +57,12 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
     }
 
     /**
-     * Looks inside the cubeCache from index 0 to "cubeCacheIndex"-1 for a cube with the exact same triangles as "cubeToCheck".
+     * Looks inside the cubeCache from index 0 to "cubeCacheIndex"-1 for a cube with the exact same triangles as "cubeToCheck" in Orientation "o".
      * If it is found true is returned.
      */
-    private boolean checkIfOrientationIsAlreadyUsed(int cubeCacheIndex, ICube cubeToCheck) {
+    private boolean checkIfOrientationIsAlreadyUsed(int cubeCacheIndex, ICube cubeToCheck, int o) {
         for (int i = 0; i < cubeCacheIndex; i++) {
-            if(Arrays.equals(cubeCache[i].getTriangles(), cubeToCheck.getTriangles())) {
+            if(Arrays.equals(cubeCache[i].getTriangles(), cubeToCheck.getTriangles(o))) {
                 return true;
             }
         }
@@ -75,13 +75,12 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
         boolean hasDuplicates = false;
         int cubeCacheIndex = 0, resultCacheIndex = 0, idCacheIndex = 0;
         for (ICube cube : this.given) {
-            for(Orientation o : cube.match(filter)) {
-                ICube c = cube.cloneCube();
-                c.setOrientation(o);
-                if(!checkIfOrientationIsAlreadyUsed(cubeCacheIndex, c)) {
+            for(int o = 0; o < 24; o++) {
+                if(filter.match(cube.getTriangles(o)) && !checkIfOrientationIsAlreadyUsed(cubeCacheIndex, cube, o)) {
+                    ICube c = cube.cloneCube();
+                    c.setOrientation(Orientation.get(o));
                     cubeCache[cubeCacheIndex++] = c;
                 }
-
             }
 
             if(cubeCacheIndex > 0) {

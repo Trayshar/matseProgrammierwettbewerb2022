@@ -34,8 +34,12 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
         this.isFirstCoordEdge = this.initSolution(generator.generate(), cubeMap);
     }
 
-    protected void syncStartingNode(TreeSolver original) {
-        this.node = original.node;
+    protected void syncStartingNode(TreeSolver original, int number) {
+        // Makes sure each solver starts on a different branch
+        this.node = original.node.children[number % original.node.children.length];
+        this.node.status = TreeNode.Status.BeingPopulated;
+        this.solution[this.node.getHeight()].set(this.node.getCube());
+        this.sets++;
     }
 
     private boolean initSolution(Coordinate[] coords, EnumMap<CubeType, ICube[]> cubeMap) {
@@ -95,7 +99,6 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
 
     @Override
     public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
-        setNextNode();
         System.out.println("Starting node: " + this.node);
 
         int maxHeight = this.solution.length - 1;
@@ -306,6 +309,8 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
          * Returns the oldest child node of this tree that is not already being populated by another thread, or null if no such node exists
          */
         public TreeNode getNext() {
+            assert this.children != null;
+
             for (TreeNode n : this.children) {
                 synchronized (n) { // Only one thread at a time may have access to this node
                     if (n.status.eligible) {

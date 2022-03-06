@@ -43,12 +43,13 @@ public class Benchmark {
                     for(File f : inputFolder.listFiles((file, s) -> s.endsWith(".txt"))) {
                         Generator.clearArrayCubeSorterCache();
                         Puzzle p = new Puzzle();
+                        System.out.println("Running test " + f.getName());
                         p.readInput(f.getAbsolutePath());
 
                         double deltaT = Generator.doTesting(p.dimensionX, p.dimensionY, p.dimensionZ, p.cubes, timeout, f.getAbsolutePath());
 
                         t += deltaT;
-                        System.out.println("Took " + deltaT + " seconds!");
+                        //System.out.println("Took " + deltaT + " seconds!");
                         fw.write(deltaT + "," + f.getName() + "\n");
                         fw.flush();
                     }
