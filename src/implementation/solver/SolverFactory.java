@@ -6,6 +6,7 @@ import abstractions.cube.ICube;
 import implementation.EdgeCoordinateGenerator;
 import implementation.LinearCoordinateGenerator;
 import implementation.solution.DynamicPuzzleSolution;
+import tooling.analysis.TreeAnalysis;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -62,13 +63,13 @@ public final class SolverFactory {
         cubeMap.put(CubeType.Six, six);
 
         Coordinate[] linCoords = new LinearCoordinateGenerator(dimX, dimY, dimZ).generate();
-//        Coordinate[] coords = new EdgeCoordinateGenerator(dimX, dimY, dimZ).generate();
+        Coordinate[] coords = new EdgeCoordinateGenerator(dimX, dimY, dimZ).generate();
 //        Coordinate[] revCoords = new Coordinate[dimX * dimY * dimZ];
 //
 //        for (int i = 0; i < coords.length; i++) {
 //            revCoords[i] = coords[(coords.length-1) - i];
 //        }
-        return new TreeSolverContainer(dimX, dimY, dimZ, cubeMap, linCoords);
+        return new TreeSolverContainer(dimX, dimY, dimZ, cubeMap, TreeAnalysis.coords);
     }
 
     /**
@@ -128,7 +129,7 @@ public final class SolverFactory {
                     }
                     return line(dimX, dimY, dimZ, cubes);
                 }
-            } else { // x, y ≥ 3, z = 1
+            } else { // x, y ≥ 2, z = 1
                 // + -- + -- + ... + -- + -- +
                 // | 2c | 3c | ... | 3c | 2c |
                 // + -- + -- + ... + -- + -- +

@@ -33,14 +33,14 @@ import java.util.stream.Stream;
 public class Generator {
 
     public static void main(String[] args) throws IOException {
-        final int x = 4;
+        final int x = 6;
         final int y = 2;
-        final int z = 5;
+        final int z = 6;
 
         for (int i = 0; i < 20; i++) {
             generate(x, y, z, true, true);
             File f = new File("result_files/selfcheck.in.txt");
-            Files.copy(f.toPath(), Path.of("input_files/" + x + "x" + y + "x" + z + "/test_" + i + ".txt"));
+            Files.copy(f.toPath(), Path.of(x + "x" + y + "x" + z + "/test_" + i + ".txt"));
         }
     }
 
@@ -267,7 +267,7 @@ public class Generator {
         System.out.print ("--------------------------\n");
     }
 
-    protected static void clearArrayCubeSorterCache() {
+    public static void clearArrayCubeSorterCache() {
         for(int i = 0; i < 46656; i++) {
             ArrayCubeSorter.queries[i] = null;
         }

@@ -110,6 +110,8 @@ public class TreeBuilder  {
                     while (j.parent != null) {
                         for (int i = 0; i < j.parent.children.length; i++) {
                             if(j.parent.children[i] == j) {
+                                TreeAnalysis.upperLimit[j.getHeight()] = Math.max(TreeAnalysis.upperLimit[j.getHeight()], j.parent.children.length);
+                                TreeAnalysis.lowerLimit[j.getHeight()] = Math.min(TreeAnalysis.lowerLimit[j.getHeight()], j.parent.children.length);
                                 System.out.printf("Height %d, %d/%d, %s\n", j.getHeight(), i+1, j.parent.children.length, types[j.getHeight()]);
                                 break;
                             }
@@ -301,7 +303,7 @@ public class TreeBuilder  {
          */
         protected void setDead() {
             synchronized (this) {
-                //this.children = new TreeNode[0];
+                this.children = new TreeNode[0];
                 this.status = Status.Dead;
             }
         }

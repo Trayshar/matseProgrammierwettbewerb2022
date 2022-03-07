@@ -109,7 +109,7 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
 
     @Override
     public IPuzzleSolution solveConcurrent() throws PuzzleNotSolvableException {
-        System.out.println("Starting node: " + this.node);
+        //System.out.println("Starting node: " + this.node);
 
         int maxHeight = this.solution.length - 1;
         do {
