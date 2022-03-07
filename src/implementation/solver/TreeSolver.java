@@ -24,14 +24,14 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
     private TreeNode node;
     private long sets = 0, expands = 0, undos = 0;
 
-    protected TreeSolver(int dimensionX, int dimensionY, int dimensionZ, EnumMap<CubeType, ICube[]> cubeMap, CoordinateGenerator generator) {
+    protected TreeSolver(int dimensionX, int dimensionY, int dimensionZ, EnumMap<CubeType, ICube[]> cubeMap, Coordinate[] coords) {
         this.dimensionX = dimensionX;
         this.dimensionY = dimensionY;
         this.dimensionZ = dimensionZ;
         this.usedIDs = new boolean[dimensionX * dimensionY * dimensionZ + 1];
         this.solution = new SolutionNode[dimensionX * dimensionY * dimensionZ];
 
-        this.isFirstCoordEdge = this.initSolution(generator.generate(), cubeMap);
+        this.isFirstCoordEdge = this.initSolution(coords, cubeMap);
     }
 
     protected void syncStartingNode(TreeSolver original, int number) {

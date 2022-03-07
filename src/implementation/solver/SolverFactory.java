@@ -1,9 +1,6 @@
 package implementation.solver;
 
-import abstractions.CoordinateGenerator;
-import abstractions.IPuzzleSolution;
-import abstractions.IPuzzleSolver;
-import abstractions.PuzzleNotSolvableException;
+import abstractions.*;
 import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
 import implementation.EdgeCoordinateGenerator;
@@ -64,7 +61,14 @@ public final class SolverFactory {
         cubeMap.put(CubeType.Five, five);
         cubeMap.put(CubeType.Six, six);
 
-        return new TreeSolverContainer(dimX, dimY, dimZ, cubeMap, new LinearCoordinateGenerator(dimX, dimY, dimZ));
+        Coordinate[] linCoords = new LinearCoordinateGenerator(dimX, dimY, dimZ).generate();
+//        Coordinate[] coords = new EdgeCoordinateGenerator(dimX, dimY, dimZ).generate();
+//        Coordinate[] revCoords = new Coordinate[dimX * dimY * dimZ];
+//
+//        for (int i = 0; i < coords.length; i++) {
+//            revCoords[i] = coords[(coords.length-1) - i];
+//        }
+        return new TreeSolverContainer(dimX, dimY, dimZ, cubeMap, linCoords);
     }
 
     /**
@@ -319,11 +323,11 @@ public final class SolverFactory {
     public static class TreeSolverContainer extends PuzzleSolverContainer {
         private final List<IPuzzleSolver> solvers;
 
-        public TreeSolverContainer(int dimensionX, int dimensionY, int dimensionZ, EnumMap<CubeType, ICube[]> cubeMap, CoordinateGenerator generator) {
-            TreeSolver s = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, generator);
-            TreeSolver s1 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, generator);
-            TreeSolver s2 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, generator);
-            TreeSolver s3 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, generator);
+        public TreeSolverContainer(int dimensionX, int dimensionY, int dimensionZ, EnumMap<CubeType, ICube[]> cubeMap, Coordinate[] coords) {
+            TreeSolver s = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, coords);
+            TreeSolver s1 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, coords);
+            TreeSolver s2 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, coords);
+            TreeSolver s3 = new TreeSolver(dimensionX, dimensionY, dimensionZ, cubeMap, coords);
 
             s.prepare();
             s1.syncStartingNode(s, 1);
