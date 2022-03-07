@@ -16,9 +16,9 @@ public class LinearCoordinateGenerator extends CoordinateGenerator {
     public Coordinate[] generate() {
         Coordinate[] coords = new Coordinate[dimensionX * dimensionY * dimensionZ];
         int i = 0;
-        for (int z = 0; z < dimensionZ; z++) {
+        for (int x = 0; x < dimensionX; x++) {
             for (int y = 0; y < dimensionY; y++) {
-                for (int x = 0; x < dimensionX; x++) {
+                for (int z = 0; z < dimensionZ; z++) {
                     coords[i++] = new Coordinate(x, y, z);
                 }
             }
