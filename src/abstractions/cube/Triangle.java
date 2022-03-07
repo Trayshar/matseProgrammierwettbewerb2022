@@ -35,14 +35,14 @@ public enum Triangle {
     private static final Triangle[] values = values();
 
     /**
-     * Faster brother of Enum.values(). DO NOT MODIFY THE VALUES RETURNED
+     * Faster brother of Enum.values(). DO NOT MODIFY THE RETURNED ARRAY
      */
     public static Triangle[] getValues() {
         return values;
     }
 
     /**
-     * Returns the orientation for the given ordinal. DO NOT MODIFY THE VALUE RETURNED
+     * Returns the orientation for the given ordinal.
      */
     public static Triangle valueOf(int ordinal) {
         assert ordinal >= 0 && ordinal < values.length;

@@ -1,5 +1,14 @@
 # Programmierwettbewerb 2022
 
+## Allgemeines zu den Paketen
+- `abstractions` enthält primär Konstanten und Interfaces zum nahtlosen Wechsel von Implementationen.
+- `implementation` enthält die zugehörigen Implementationen; fast alles in diesem Paket implementiert etwas "Abstraktes"
+- `tooling` enthält meine eigene Benchmark-Applikation. Ansonsten ist das irgendwelcher Code, der beim Nachdenken und Ausprobieren angefallen ist (und den ich nur zum synchronisieren committet habe, weil ich auf mehr als einem Gerät hier dran gearbeitet habe)
+- `mdw2021` ist euer Code, unberührt.
+
+## Solver
+`TreeSolver` ist der Beste von den Dreien, aber da kein Puzzle was nicht (x,y,z) > 1 hat länger als 0.05 Sekunden dauert hab ich es unterlassen, für kleine Puzzles den neuen Solver einzuspannen.
+
 ## Aufgabenstellung
 Die Aufgabenstellung in Textform befindet sich [hier](mdw2022.pdf).
 

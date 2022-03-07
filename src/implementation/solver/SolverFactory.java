@@ -3,10 +3,8 @@ package implementation.solver;
 import abstractions.*;
 import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
-import implementation.EdgeCoordinateGenerator;
 import implementation.LinearCoordinateGenerator;
 import implementation.solution.DynamicPuzzleSolution;
-import tooling.analysis.TreeAnalysis;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -63,13 +61,7 @@ public final class SolverFactory {
         cubeMap.put(CubeType.Six, six);
 
         Coordinate[] linCoords = new LinearCoordinateGenerator(dimX, dimY, dimZ).generate();
-        Coordinate[] coords = new EdgeCoordinateGenerator(dimX, dimY, dimZ).generate();
-//        Coordinate[] revCoords = new Coordinate[dimX * dimY * dimZ];
-//
-//        for (int i = 0; i < coords.length; i++) {
-//            revCoords[i] = coords[(coords.length-1) - i];
-//        }
-        return new TreeSolverContainer(dimX, dimY, dimZ, cubeMap, TreeAnalysis.coords);
+        return new TreeSolverContainer(dimX, dimY, dimZ, cubeMap, linCoords);
     }
 
     /**

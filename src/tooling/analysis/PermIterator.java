@@ -2,6 +2,7 @@ package tooling.analysis;
 
 import java.util.Iterator;
 
+// Stolen from somewhere
 public class PermIterator implements Iterator<int[]>
 {
     private int[] next = null;

@@ -14,6 +14,8 @@ import java.util.function.Predicate;
 /**
  * A cube sorter using one huge array for indexing and with duplicate detection. Use only for larger puzzles,
  * otherwise the time spent allocating and null-ing the array will take longer than solving it.
+ * </br>
+ * The cached queries are stateless, meaning they don't encode if a cube has been used already or where a cube might be located.
  */
 public class ArrayCubeSorter implements ICubeSorter, Cloneable {
 
@@ -72,6 +74,7 @@ public class ArrayCubeSorter implements ICubeSorter, Cloneable {
     private QuerySet cache(ICubeFilter filter, int index) {
         assert filter.getUniqueId() == index;
 
+        // Whether the resulting QuerySet has any cubes which are identical in it
         boolean hasDuplicates = false;
         int cubeCacheIndex = 0, resultCacheIndex = 0, idCacheIndex = 0;
         for (ICube cube : this.given) {

@@ -115,7 +115,7 @@ public enum CubeType {
         this.triangles = this.predicate.getNumTriangle();
     }
 
-    /** See {@literal  tooling.PrimitiveCubeSearch.generateFilterToTypeMapping()} */
+    /** See {@literal  tooling.analysis.PrimitiveCubeSearch.generateFilterToTypeMapping()} */
     private static final CubeType[][][][][][] types = {{{{{{Zero, One,}, {One, TwoConnected,},}, {{One, TwoConnected,}, {TwoConnected, ThreeEdge,},},}, {{{One, TwoConnected,}, {TwoOpposite, ThreeConnected,},}, {{TwoConnected, ThreeEdge,}, {ThreeConnected, FourConnected,},},},}, {{{{One, TwoConnected,}, {TwoConnected, ThreeEdge,},}, {{TwoOpposite, ThreeConnected,}, {ThreeConnected, FourConnected,},},}, {{{TwoConnected, ThreeEdge,}, {ThreeConnected, FourConnected,},}, {{ThreeConnected, FourConnected,}, {FourRound, Five,},},},},}, {{{{{One, TwoOpposite,}, {TwoConnected, ThreeConnected,},}, {{TwoConnected, ThreeConnected,}, {ThreeEdge, FourConnected,},},}, {{{TwoConnected, ThreeConnected,}, {ThreeConnected, FourRound,},}, {{ThreeEdge, FourConnected,}, {FourConnected, Five,},},},}, {{{{TwoConnected, ThreeConnected,}, {ThreeEdge, FourConnected,},}, {{ThreeConnected, FourRound,}, {FourConnected, Five,},},}, {{{ThreeEdge, FourConnected,}, {FourConnected, Five,},}, {{FourConnected, Five,}, {Five, Six,},},},},},};
     /**
      * Returns the CubeType that all cubes matching the given filter belong into.

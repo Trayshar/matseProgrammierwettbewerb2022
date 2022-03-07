@@ -15,25 +15,25 @@ public class Benchmark {
             boolean shuffled = false, rotated = false;
             File inputFolder = null;
             for (String s : args) {
-                if(s.startsWith("-x=")) x = Integer.parseInt(s.substring(3));
-                else if(s.startsWith("-y=")) y = Integer.parseInt(s.substring(3));
-                else if(s.startsWith("-z=")) z = Integer.parseInt(s.substring(3));
-                else if(s.startsWith("-maxX=")) maxX = Integer.parseInt(s.substring(6));
-                else if(s.startsWith("-maxY=")) maxY = Integer.parseInt(s.substring(6));
-                else if(s.startsWith("-maxZ=")) maxZ = Integer.parseInt(s.substring(6));
-                else if(s.startsWith("-shuffled")) shuffled = true;
-                else if(s.startsWith("-rotated")) rotated = true;
-                else if(s.startsWith("-runs=")) runs = Integer.parseInt(s.substring(6));
-                else if(s.startsWith("-name=")) name = s.substring(6);
-                else if(s.startsWith("-timeout=")) timeout = Integer.parseInt(s.substring(9));
-                else if(s.startsWith("-folder=")) inputFolder = new File(s.substring(8));
+                if(s.startsWith("-x=")) x = Integer.parseInt(s.substring(3)); // Single mode; Sets "x" dimensions
+                else if(s.startsWith("-y=")) y = Integer.parseInt(s.substring(3)); // Single mode; Sets "y" dimensions
+                else if(s.startsWith("-z=")) z = Integer.parseInt(s.substring(3)); // Single mode; Sets "z" dimensions
+                else if(s.startsWith("-maxX=")) maxX = Integer.parseInt(s.substring(6)); // MaxC mode; Sets max "x" dimensions
+                else if(s.startsWith("-maxY=")) maxY = Integer.parseInt(s.substring(6)); // MaxC mode; Sets max "y" dimensions
+                else if(s.startsWith("-maxZ=")) maxZ = Integer.parseInt(s.substring(6)); // MaxC mode; Sets max "z" dimensions
+                else if(s.startsWith("-shuffled")) shuffled = true; // Single/MaxC modes; Enables randomized cube order
+                else if(s.startsWith("-rotated")) rotated = true; // Single/MaxC modes; Enables randomized cube orientation
+                else if(s.startsWith("-runs=")) runs = Integer.parseInt(s.substring(6)); // Single/MaxC modes; How many times each dimension should be tested
+                else if(s.startsWith("-name=")) name = s.substring(6); // All modes; Name of the resulting .csv file
+                else if(s.startsWith("-timeout=")) timeout = Integer.parseInt(s.substring(9)); // All modes; Maximal time for the solver to finish. If reached, it stops.
+                else if(s.startsWith("-folder=")) inputFolder = new File(s.substring(8)); // Folder mode; Folder where all test files are in.
                 else {
                     System.err.printf("Unknown argument \"%s\"\n", s);
                 }
             }
 
             double t = 0d;
-            if(inputFolder != null) {
+            if(inputFolder != null) { // Folder mode; Runs all ".txt" files one after another
                 if(!inputFolder.exists() || !inputFolder.isDirectory()) throw new FileNotFoundException();
 
                 runs = 1;
@@ -56,7 +56,7 @@ public class Benchmark {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            } else if(maxX != 0) {
+            } else if(maxX != 0) { // MaxC mode. Runs puzzles up to maxX, maxY & maxZ dimension, each "runs" times.
                 try (FileWriter fw = new FileWriter("result_files/benchmark_" + name + "_" + System.currentTimeMillis() + ".csv")) {
                     fw.write("x,y,z,run,time,cubes\n");
                     for (x = 1; x <= maxX; x++) {
@@ -83,7 +83,7 @@ public class Benchmark {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else {
+            }else { // Single mode. Runs one puzzle dimension "runs" times.
                 for (int i = 0; i < runs; i++) {
                     t += Generator.doTesting(x, y, z, shuffled, rotated, timeout);
                 }

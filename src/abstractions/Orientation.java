@@ -97,6 +97,4 @@ public enum Orientation{
 
         return values[ordinal];
     }
-
-    //TODO: Implement rotation
 }

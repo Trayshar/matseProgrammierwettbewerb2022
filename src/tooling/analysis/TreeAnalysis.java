@@ -6,19 +6,11 @@ import abstractions.cube.CubeType;
 import abstractions.cube.ICube;
 import abstractions.cube.ICubeFilter;
 import abstractions.cube.Triangle;
-import implementation.EdgeCoordinateGenerator;
-import implementation.LinearCoordinateGenerator;
-import implementation.Puzzle;
 import implementation.cube.filter.CubeFilterFactory;
-import tooling.Generator;
 
-import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
 
 public class TreeAnalysis {
     public static final int[] upperLimit = new int[36];
@@ -34,45 +26,47 @@ public class TreeAnalysis {
     public static void main(String[] args) throws PuzzleNotSolvableException, IOException {
         final int dimX = 5, dimY = 4, dimZ = 2;
 
-        FileWriter fw = new FileWriter("result_files/pathAnalysis.txt");
-        int length = dimX * dimY * dimZ;
-        Coordinate[] bestCoords = null;
-        double runtime = 20;
-        Coordinate[] t = new LinearCoordinateGenerator(dimX, dimY, dimZ).generate();
-        for(var perms = new PermIterator(length); perms.hasNext();) {
-            int[] e = perms.next();
-            double time = 0d;
 
-            Coordinate[] newCoords = new Coordinate[length];
-            for (int i = 0; i < length; i++) {
-                newCoords[i] = t[e[i]];
-            }
 
-            coords = newCoords;
-            System.out.println("Coords: " + Arrays.toString(newCoords));
-            for(File f : new File("4x2x5").listFiles((file, s) -> s.endsWith(".txt"))) {
-                Generator.clearArrayCubeSorterCache();
-                Puzzle p = new Puzzle();
-                System.out.println("Running test " + f.getName());
-                p.readInput(f.getAbsolutePath());
-
-                double deltaT = Generator.doTesting(p.dimensionX, p.dimensionY, p.dimensionZ, p.cubes, (int) Math.ceil(runtime/10), f.getAbsolutePath());
-
-                time += deltaT;
-            }
-
-            if(time < runtime) {
-                runtime = time;
-                bestCoords = newCoords;
-                String s = "New best (" + runtime + "): " + Arrays.toString(bestCoords) + "\n";
-                fw.write(s);
-                System.out.println(s);
-                fw.flush();
-            }
-        }
-        fw.close();
-
-        System.out.print("Best (" + runtime + "): " + Arrays.toString(bestCoords));
+//        FileWriter fw = new FileWriter("result_files/pathAnalysis.txt");
+//        int length = dimX * dimY * dimZ;
+//        Coordinate[] bestCoords = null;
+//        double runtime = 20;
+//        Coordinate[] t = new LinearCoordinateGenerator(dimX, dimY, dimZ).generate();
+//        for(var perms = new PermIterator(length); perms.hasNext();) {
+//            int[] e = perms.next();
+//            double time = 0d;
+//
+//            Coordinate[] newCoords = new Coordinate[length];
+//            for (int i = 0; i < length; i++) {
+//                newCoords[i] = t[e[i]];
+//            }
+//
+//            coords = newCoords;
+//            System.out.println("Coords: " + Arrays.toString(newCoords));
+//            for(File f : new File("4x2x5").listFiles((file, s) -> s.endsWith(".txt"))) {
+//                Generator.clearArrayCubeSorterCache();
+//                Puzzle p = new Puzzle();
+//                System.out.println("Running test " + f.getName());
+//                p.readInput(f.getAbsolutePath());
+//
+//                double deltaT = Generator.doTesting(p.dimensionX, p.dimensionY, p.dimensionZ, p.cubes, (int) Math.ceil(runtime/10), f.getAbsolutePath());
+//
+//                time += deltaT;
+//            }
+//
+//            if(time < runtime) {
+//                runtime = time;
+//                bestCoords = newCoords;
+//                String s = "New best (" + runtime + "): " + Arrays.toString(bestCoords) + "\n";
+//                fw.write(s);
+//                System.out.println(s);
+//                fw.flush();
+//            }
+//        }
+//        fw.close();
+//
+//        System.out.print("Best (" + runtime + "): " + Arrays.toString(bestCoords));
 
 //        while(true) {
 //            Generator.clearArrayCubeSorterCache();
@@ -151,7 +145,7 @@ public class TreeAnalysis {
 
 
     private static void validateCoordinates(int dimX, int dimY, int dimZ) throws IllegalStateException{
-        var t = new EdgeCoordinateGenerator(dimX, dimY, dimZ).generate();
+        var t = new CustomCoordinateGenerator(dimX, dimY, dimZ).generate();
         var b = new boolean[dimX][dimY][dimZ];
 
         int i = 0;

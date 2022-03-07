@@ -4,6 +4,9 @@ import abstractions.cube.ICube;
 
 public record Coordinate(int x, int y, int z) {
 
+    /**
+     * Shorthand for arr[c.x()][c.y()][c.z()]; Might even be faster.
+     */
     public <T> T arrayGet(T[][][] arr) {
         return arr[x][y][z];
     }

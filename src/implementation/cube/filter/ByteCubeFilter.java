@@ -31,7 +31,7 @@ public class ByteCubeFilter implements ICubeFilter {
 
     public ByteCubeFilter(ByteCubeFilter raw, Orientation o) {
         for (int j = 0; j < 6; j++) {
-            if(raw.sides[j] != Triangle.None.ordinal()) { // Only write if there is a triangle
+            if(raw.sides[j] != None) { // Only write if there is a triangle
                 byte tmp  = (byte) (o.triangleOffset[j] + raw.sides[j]);
                 if (tmp > 4) tmp -= 4;
                 sides[o.side[j]] = tmp;

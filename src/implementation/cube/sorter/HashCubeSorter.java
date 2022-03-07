@@ -12,6 +12,7 @@ import java.util.function.Predicate;
 
 /**
  * A data structure to store cubes and query for specific ones. Queries are cached using a HashMap.
+ * No duplication detection is done. Use only for smaller puzzles.
  */
 public class HashCubeSorter implements ICubeSorter {
     /** Wrapper for a query result. God, why doesn't this language support tuples... */

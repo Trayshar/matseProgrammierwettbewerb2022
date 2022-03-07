@@ -1,4 +1,4 @@
-package tooling;
+package tooling.analysis;
 
 import abstractions.Orientation;
 import abstractions.cube.CubeType;
