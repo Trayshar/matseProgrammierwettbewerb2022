@@ -10,18 +10,23 @@ import implementation.cube.sorter.CubeSorterFactory;
 import java.util.ConcurrentModificationException;
 import java.util.EnumMap;
 
+/**
+ * Tree-based concurrent solver.
+ */
 public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
     /* Immutable dimensions of this solver */
     public final int dimensionX, dimensionY, dimensionZ;
+    /* Whether the first coordinate in this solution is an Edge */
     private final boolean isFirstCoordEdge;
 
-    /* Immutable references, but inner state is mutable */
+    /* Immutable reference to the array, but inner state is mutable */
     private final boolean[] usedIDs;
     /* Immutable references, but inner state of each Node might change. Indexed by tree height. Not to be synchronized. */
     private final SolutionNode[] solution;
 
     /* Mutable */
     private TreeNode node;
+    /* Mutable counters, used for logging */
     private long sets = 0, expands = 0, undos = 0;
 
     protected TreeSolver(int dimensionX, int dimensionY, int dimensionZ, EnumMap<CubeType, ICube[]> cubeMap, Coordinate[] coords) {
@@ -45,6 +50,11 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
     private boolean initSolution(Coordinate[] coords, EnumMap<CubeType, ICube[]> cubeMap) {
         SolutionNode[][][] tmp = new SolutionNode[dimensionX][dimensionY][dimensionZ];
 
+        var sorterMap = new EnumMap<CubeType, ArrayCubeSorter>(CubeType.class);
+        for (var entry : cubeMap.entrySet()) {
+            sorterMap.put(entry.getKey(), CubeSorterFactory.from(entry.getValue(), entry.getKey()));
+        }
+
         boolean isFirstCoordEdge = false;
         for (int i = 0; i < coords.length; i++) {
             Coordinate c = coords[i];
@@ -57,7 +67,7 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
             if(c.z() == dimensionZ - 1) f.setSide(ICube.Side.Up, Triangle.None);
 
             CubeType type = CubeType.get(f.getTriangles());
-            ArrayCubeSorter s = CubeSorterFactory.from(cubeMap.get(type), type);
+            ArrayCubeSorter s = sorterMap.get(type);
             if(i == 0 && type == CubeType.ThreeEdge) isFirstCoordEdge = true;
 
             this.solution[i] = new SolutionNode(c, f, s);
@@ -126,22 +136,11 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
      */
     public void setNextNode() throws PuzzleNotSolvableException {
         TreeNode nextNode = this.node.getNext();
-        if(nextNode == null) { // Either this node is empty, or all children are already being processed by another thread
-//            TreeNode nextSibling = this.node.parent.getNext();
-//            if(nextSibling != null) { // The parent of the current node has a "free" child
-//                this.node.validate(); // Current node may be dead at this point
-//                this.undos++;
-//                if(Puzzle.DEBUG && nextSibling.isDead()) throw new ConcurrentModificationException();
-//                this.node = nextSibling;
-//                this.solution[this.node.getHeight()].set(this.node.getCube());
-//                this.sets++;
-//            }else {
-                this.undo();
-                this.setNextNode();
-//            }
-        }
-        else {
-            if(Puzzle.DEBUG && nextNode.isDead()) throw new ConcurrentModificationException();
+        if(nextNode == null) { // Either this node is dead or all children are already being processed by another thread
+            this.undo();
+            this.setNextNode();
+        } else {
+            if(Puzzle.DEBUG && !nextNode.status.eligible) throw new ConcurrentModificationException();
             this.node = nextNode;
             this.solution[this.node.getHeight()].set(this.node.getCube());
             this.sets++;
@@ -159,6 +158,7 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
         return !this.usedIDs[cube];
     }
 
+    /* temporary counters to measure difference between logging calls */
     private long old_sets = 0, old_expands = 0, old_undos = 0;
 
     @Override
@@ -212,7 +212,7 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
     }
 
     /**
-     * Each node represents one position in the solution
+     * Each node represents one position in the solution. Not synchronized.
      */
     private class SolutionNode {
         private final Coordinate coordinate;
@@ -265,6 +265,7 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
 
     /**
      * Each node has exactly one parent and n children, that are populated on demand later. Only one thread may ever populate the same node at the same time.
+     * All {@link TreeSolver}s share the same root node. Node access is synchronized, only one thread may have write access at a time. Reading is not synchronized, however.
      */
     public static class TreeNode {
         private final int height;
@@ -274,7 +275,7 @@ public class TreeSolver implements IPuzzleSolver, IPuzzleSolution {
         private Status status;
 
         /**
-         * Constructor for the root node which doesn't have a parent.
+         * Constructor for the root node which doesn't have a parent or any data.
          */
         public TreeNode() {
             this.cube = null;
